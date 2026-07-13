@@ -57,7 +57,8 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .finger-chip{display:inline-block;padding:2px 8px;border-radius:10px;color:#fff;font-weight:600;font-size:13px;margin:0 2px}
 
 /* Text display (shared) */
-.text-display{background:#fffaf2;border:2px dashed var(--line);border-radius:14px;padding:12px 18px;font-family:'JetBrains Mono',monospace;font-size:22px;line-height:1.6;letter-spacing:.5px;margin:6px 0;user-select:none;word-wrap:break-word;min-height:60px;cursor:text}
+.text-display{background:#fffaf2;border:2px dashed var(--line);border-radius:14px;padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:clamp(15px,1.7vw,22px);line-height:1.6;letter-spacing:.5px;margin:6px 0;user-select:none;word-wrap:break-word;cursor:text}
+#poemTelexHint{background:var(--warn);color:var(--ink);padding:2px 10px;border-radius:8px;font-weight:700;font-size:12px}
 .char{position:relative;padding:0 1px;border-radius:3px;transition:background .1s,color .1s}
 .char.done{color:var(--success)}.char.wrong{color:#fff;background:var(--danger)}
 .char.current{background:var(--warn);color:var(--ink);animation:blink 1s ease-in-out infinite}
@@ -92,8 +93,8 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .keyboard-zone{position:relative;margin-top:8px}
 .keyboard{display:flex;flex-direction:column;gap:5px;align-items:center;position:relative;z-index:1}
 .kb-row{display:flex;gap:5px}
-.key{min-width:68px;height:58px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;font-weight:600;font-size:20px;color:var(--ink);box-shadow:0 3px 0 var(--line);position:relative;transition:transform .08s,box-shadow .08s,background .15s;text-transform:uppercase}
-.key.space{min-width:420px}
+.key{width:clamp(34px,6.2vw,68px);height:clamp(34px,5.4vw,58px);background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;font-weight:600;font-size:clamp(11px,1.6vw,20px);color:var(--ink);box-shadow:0 3px 0 var(--line);position:relative;transition:transform .08s,box-shadow .08s,background .15s;text-transform:uppercase;flex-shrink:0}
+.key.space{width:clamp(180px,38vw,420px)}
 .key::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:55%;height:3px;border-radius:2px;background:var(--finger-color,transparent)}
 .key.target{background:var(--finger-color);color:#fff;transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.15);animation:pulse-key .7s ease-in-out infinite;z-index:3}
 .key.target::after{display:none}
@@ -102,7 +103,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 
 /* Hands overlay */
 .hands-overlay{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:2;padding:0 2px}
-.hand-svg{width:260px;flex-shrink:0;opacity:.35;-webkit-user-select:none;user-select:none}
+.hand-svg{width:clamp(120px,23vw,260px);flex-shrink:0;opacity:.35;-webkit-user-select:none;user-select:none}
 .hand-svg .finger,.hand-svg .palm{fill:#f4c987;stroke:#c8924a;stroke-width:1.5;transition:fill .2s,stroke .2s,opacity .2s}
 .hand-svg .nail{fill:#ffe4b8;stroke:#c8924a;stroke-width:1;transition:fill .2s}
 .hand-svg .eye{fill:#3d2c1e}.hand-svg .cheek{fill:#ff9ec5;opacity:.6}
@@ -157,10 +158,25 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .tip-content strong{color:#4a2f0a}.tip-content em{font-style:normal;font-weight:700;color:#d4691e}
 .tip-close{background:#fff;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:12px;color:#6b4a1e;box-shadow:0 2px 0 #f0b050;flex-shrink:0}
 
+/* Màn hình thấp (Galaxy Tab landscape ~800px cao, MacBook 13") */
+@media(max-height:820px){
+  body{padding:6px 10px}
+  .logo-icon{width:34px;height:34px;font-size:18px}
+  .logo h1{font-size:17px}.logo p{font-size:10px}
+  .main-card{padding:10px 14px}
+  .mascot{width:52px;height:52px}
+  .tab{padding:7px 12px;font-size:14px}
+  .text-display{padding:8px 14px;margin:4px 0}
+  .keyboard{gap:4px}.kb-row{gap:4px}
+  .keyboard-zone{margin-top:5px}
+  .actions{margin-top:4px}
+  .btn{padding:6px 14px;font-size:13px}
+}
 @media(max-width:800px){
-  .key{min-width:42px;height:44px;font-size:14px}.key.space{min-width:220px}
-  .text-display{font-size:18px;padding:10px 14px}.hand-svg{width:150px}
-  .mascot{width:50px;height:50px}.stat{min-width:54px;padding:3px 8px}.stat-value{font-size:14px}
+  .mascot{width:46px;height:46px}
+  .stat{min-width:52px;padding:3px 8px}.stat-value{font-size:14px}
+  .speech-bubble{font-size:12px;padding:6px 10px}
+  .info-bar{font-size:11px}
 }
 </style>
 </head>
@@ -215,34 +231,6 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
         <button class="btn" id="resetBtn">🔄 Làm lại</button>
         <button class="btn primary" id="nextBtn">➡️ Bài tiếp</button>
       </div>
-      <div class="keyboard-zone">
-        <div class="keyboard" id="keyboard"></div>
-        <div class="hands-overlay">
-          <svg class="hand-svg" id="handLeft" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
-            <ellipse class="palm" cx="120" cy="140" rx="78" ry="48"/>
-            <g id="finger-left-pinky"><rect class="finger" x="30" y="70" width="32" height="65" rx="16" transform="rotate(-12 46 102)"/><ellipse class="nail" cx="40" cy="74" rx="9" ry="5" transform="rotate(-12 40 74)"/></g>
-            <g id="finger-left-ring"><rect class="finger" x="62" y="42" width="34" height="92" rx="17" transform="rotate(-5 79 88)"/><ellipse class="nail" cx="74" cy="46" rx="10" ry="5" transform="rotate(-5 74 46)"/></g>
-            <g id="finger-left-middle"><rect class="finger" x="100" y="32" width="34" height="100" rx="17"/><ellipse class="nail" cx="117" cy="38" rx="11" ry="5"/></g>
-            <g id="finger-left-index"><rect class="finger" x="138" y="46" width="34" height="88" rx="17" transform="rotate(8 155 90)"/><ellipse class="nail" cx="158" cy="52" rx="10" ry="5" transform="rotate(8 158 52)"/></g>
-            <g id="finger-left-thumb"><rect class="finger" x="170" y="100" width="38" height="56" rx="19" transform="rotate(45 189 128)"/><ellipse class="nail" cx="207" cy="118" rx="9" ry="5" transform="rotate(45 207 118)"/></g>
-            <circle class="eye" cx="100" cy="148" r="2.5"/><circle class="eye" cx="140" cy="148" r="2.5"/>
-            <ellipse class="cheek" cx="92" cy="156" rx="5" ry="3"/><ellipse class="cheek" cx="148" cy="156" rx="5" ry="3"/>
-            <path d="M113 158 Q120 163 127 158" stroke="#3d2c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-          </svg>
-          <svg class="hand-svg" id="handRight" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
-            <ellipse class="palm" cx="120" cy="140" rx="78" ry="48"/>
-            <g id="finger-right-thumb"><rect class="finger" x="32" y="100" width="38" height="56" rx="19" transform="rotate(-45 51 128)"/><ellipse class="nail" cx="33" cy="118" rx="9" ry="5" transform="rotate(-45 33 118)"/></g>
-            <g id="finger-right-index"><rect class="finger" x="68" y="46" width="34" height="88" rx="17" transform="rotate(-8 85 90)"/><ellipse class="nail" cx="82" cy="52" rx="10" ry="5" transform="rotate(-8 82 52)"/></g>
-            <g id="finger-right-middle"><rect class="finger" x="106" y="32" width="34" height="100" rx="17"/><ellipse class="nail" cx="123" cy="38" rx="11" ry="5"/></g>
-            <g id="finger-right-ring"><rect class="finger" x="144" y="42" width="34" height="92" rx="17" transform="rotate(5 161 88)"/><ellipse class="nail" cx="166" cy="46" rx="10" ry="5" transform="rotate(5 166 46)"/></g>
-            <g id="finger-right-pinky"><rect class="finger" x="178" y="70" width="32" height="65" rx="16" transform="rotate(12 194 102)"/><ellipse class="nail" cx="200" cy="74" rx="9" ry="5" transform="rotate(12 200 74)"/></g>
-            <circle class="eye" cx="100" cy="148" r="2.5"/><circle class="eye" cx="140" cy="148" r="2.5"/>
-            <ellipse class="cheek" cx="92" cy="156" rx="5" ry="3"/><ellipse class="cheek" cx="148" cy="156" rx="5" ry="3"/>
-            <path d="M113 158 Q120 163 127 158" stroke="#3d2c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-          </svg>
-        </div>
-      </div>
-      <div class="caps-warn" id="capsWarn">⚠️ CapsLock đang bật! Hãy tắt đi nhé Bon.</div>
     </div>
 
     <!-- ==================== TAB 2: THƠ ==================== -->
@@ -304,7 +292,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
           </div>
           <div class="speech-bubble" id="bubblePoemPlay">Bon ơi, hãy gõ theo bài thơ nhé! Bộ gõ <strong>Telex</strong> đã sẵn sàng 🎹</div>
         </div>
-        <div class="info-bar"><strong id="poemPlayTitle"></strong><span id="poemCharCount"></span></div>
+        <div class="info-bar"><strong id="poemPlayTitle"></strong><span id="poemTelexHint"></span><span id="poemCharCount"></span></div>
         <div class="text-display" id="poemDisplay" tabindex="0"></div>
         <div class="progress-track"><div class="progress-fill" id="poemProgressFill"></div><div class="progress-runner" id="poemRunner">🦉</div></div>
         <div class="actions">
@@ -314,6 +302,36 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
         <textarea class="hidden-input" id="poemInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
       </div>
     </div>
+
+    <!-- ==================== SHARED: KEYBOARD + HANDS ==================== -->
+    <div class="keyboard-zone">
+      <div class="keyboard" id="keyboard"></div>
+      <div class="hands-overlay">
+        <svg class="hand-svg" id="handLeft" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="palm" cx="120" cy="140" rx="78" ry="48"/>
+          <g id="finger-left-pinky"><rect class="finger" x="30" y="70" width="32" height="65" rx="16" transform="rotate(-12 46 102)"/><ellipse class="nail" cx="40" cy="74" rx="9" ry="5" transform="rotate(-12 40 74)"/></g>
+          <g id="finger-left-ring"><rect class="finger" x="62" y="42" width="34" height="92" rx="17" transform="rotate(-5 79 88)"/><ellipse class="nail" cx="74" cy="46" rx="10" ry="5" transform="rotate(-5 74 46)"/></g>
+          <g id="finger-left-middle"><rect class="finger" x="100" y="32" width="34" height="100" rx="17"/><ellipse class="nail" cx="117" cy="38" rx="11" ry="5"/></g>
+          <g id="finger-left-index"><rect class="finger" x="138" y="46" width="34" height="88" rx="17" transform="rotate(8 155 90)"/><ellipse class="nail" cx="158" cy="52" rx="10" ry="5" transform="rotate(8 158 52)"/></g>
+          <g id="finger-left-thumb"><rect class="finger" x="170" y="100" width="38" height="56" rx="19" transform="rotate(45 189 128)"/><ellipse class="nail" cx="207" cy="118" rx="9" ry="5" transform="rotate(45 207 118)"/></g>
+          <circle class="eye" cx="100" cy="148" r="2.5"/><circle class="eye" cx="140" cy="148" r="2.5"/>
+          <ellipse class="cheek" cx="92" cy="156" rx="5" ry="3"/><ellipse class="cheek" cx="148" cy="156" rx="5" ry="3"/>
+          <path d="M113 158 Q120 163 127 158" stroke="#3d2c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <svg class="hand-svg" id="handRight" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="palm" cx="120" cy="140" rx="78" ry="48"/>
+          <g id="finger-right-thumb"><rect class="finger" x="32" y="100" width="38" height="56" rx="19" transform="rotate(-45 51 128)"/><ellipse class="nail" cx="33" cy="118" rx="9" ry="5" transform="rotate(-45 33 118)"/></g>
+          <g id="finger-right-index"><rect class="finger" x="68" y="46" width="34" height="88" rx="17" transform="rotate(-8 85 90)"/><ellipse class="nail" cx="82" cy="52" rx="10" ry="5" transform="rotate(-8 82 52)"/></g>
+          <g id="finger-right-middle"><rect class="finger" x="106" y="32" width="34" height="100" rx="17"/><ellipse class="nail" cx="123" cy="38" rx="11" ry="5"/></g>
+          <g id="finger-right-ring"><rect class="finger" x="144" y="42" width="34" height="92" rx="17" transform="rotate(5 161 88)"/><ellipse class="nail" cx="166" cy="46" rx="10" ry="5" transform="rotate(5 166 46)"/></g>
+          <g id="finger-right-pinky"><rect class="finger" x="178" y="70" width="32" height="65" rx="16" transform="rotate(12 194 102)"/><ellipse class="nail" cx="200" cy="74" rx="9" ry="5" transform="rotate(12 200 74)"/></g>
+          <circle class="eye" cx="100" cy="148" r="2.5"/><circle class="eye" cx="140" cy="148" r="2.5"/>
+          <ellipse class="cheek" cx="92" cy="156" rx="5" ry="3"/><ellipse class="cheek" cx="148" cy="156" rx="5" ry="3"/>
+          <path d="M113 158 Q120 163 127 158" stroke="#3d2c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="caps-warn" id="capsWarn">⚠️ CapsLock đang bật! Hãy tắt đi nhé Bon.</div>
   </div>
 </div>
 
@@ -371,7 +389,7 @@ function showOverlay(emoji,title,stars,summary,btnText,btnAction){
   document.getElementById('stars').textContent=stars;
   document.getElementById('completeSummary').innerHTML=summary;
   document.getElementById('continueBtn').textContent=btnText;
-  document.getElementById('continueBtn').onclick=()=>{sound.init();btnAction()};
+  document.getElementById('continueBtn').onclick=()=>{sound.init();hideOverlay();btnAction()};
   document.getElementById('overlay').classList.add('show');
 }
 function hideOverlay(){document.getElementById('overlay').classList.remove('show')}
@@ -413,7 +431,7 @@ function highlight(){
   document.querySelectorAll('g.finger-active').forEach(e=>{e.classList.remove('finger-active');e.style.removeProperty('--active-color');e.style.removeProperty('--active-stroke')});
   document.querySelectorAll('.hand-svg.has-active').forEach(e=>e.classList.remove('has-active'));
   if(S.done)return;const ch=S.text[S.pos];if(!ch)return;
-  const keyEl=document.querySelector('.key[data-key="'+ch+'"]');if(keyEl)keyEl.classList.add('target');
+  const keyEl=findKeyEl(ch);if(keyEl)keyEl.classList.add('target');
   const info=FMAP[ch];if(!info)return;
   document.getElementById('hint-key').textContent=ch===' '?'Space':ch.toUpperCase();
   const fc=document.getElementById('hint-finger');fc.textContent=info.label;fc.style.background=info.color;
@@ -427,7 +445,7 @@ function onKey(e){
   if(key.length!==1)return;if(key===' ')e.preventDefault();
   if(S.start===null){S.start=Date.now();S.timer=setInterval(updateStats,200)}
   const exp=S.text[S.pos],pr=key.toLowerCase();S.total++;
-  const kEl=document.querySelector('.key[data-key="'+pr+'"]');if(kEl){kEl.classList.add('pressed');setTimeout(()=>kEl.classList.remove('pressed'),120)}
+  const kEl=findKeyEl(pr);if(kEl){kEl.classList.add('pressed');setTimeout(()=>kEl.classList.remove('pressed'),120)}
   if(pr===exp){sound.correct();const chars=document.querySelectorAll('#textDisplay .char');if(chars[S.pos]){chars[S.pos].classList.remove('current','wrong');chars[S.pos].classList.add('done')}S.pos++;setMood('mascot','happy');
     if(S.pos>=S.text.length){finishAbc();return}if(chars[S.pos])chars[S.pos].classList.add('current');highlight();updateProgress();
   }else{sound.wrong();S.errors++;const chars=document.querySelectorAll('#textDisplay .char');if(chars[S.pos])chars[S.pos].classList.add('wrong');setMood('mascot','sad')}
@@ -451,6 +469,66 @@ function resetAbc(){S.pos=0;S.errors=0;S.total=0;S.start=null;S.done=false;clear
   hideOverlay();document.getElementById('capsWarn').classList.remove('show');renderText();highlight();updateProgress();updateBadge()}
 function nextAbc(){S.idx=(S.idx+1)%EX.length;S.text=EX[S.idx].x;resetAbc()}
 function updateBadge(){const ex=EX[S.idx],b=document.getElementById('exerciseBadge');b.textContent='';const s=document.createElement('strong');s.textContent='Bài '+(S.idx+1)+'/'+EX.length+': ';b.appendChild(s);b.appendChild(document.createTextNode(ex.t+' '));const c=document.createElement('span');c.className='new-keys';c.textContent=ex.k;b.appendChild(c)}
+
+// ===================== TELEX ENGINE =====================
+// Phân tách 1 ký tự tiếng Việt thành chuỗi phím Telex cần gõ
+const TELEX_BASE={
+  'à':'af','á':'as','ả':'ar','ã':'ax','ạ':'aj',
+  'â':'aa','ầ':'aaf','ấ':'aas','ẩ':'aar','ẫ':'aax','ậ':'aaj',
+  'ă':'aw','ằ':'awf','ắ':'aws','ẳ':'awr','ẵ':'awx','ặ':'awj',
+  'è':'ef','é':'es','ẻ':'er','ẽ':'ex','ẹ':'ej',
+  'ê':'ee','ề':'eef','ế':'ees','ể':'eer','ễ':'eex','ệ':'eej',
+  'ì':'if','í':'is','ỉ':'ir','ĩ':'ix','ị':'ij',
+  'ò':'of','ó':'os','ỏ':'or','õ':'ox','ọ':'oj',
+  'ô':'oo','ồ':'oof','ố':'oos','ổ':'oor','ỗ':'oox','ộ':'ooj',
+  'ơ':'ow','ờ':'owf','ớ':'ows','ở':'owr','ỡ':'owx','ợ':'owj',
+  'ù':'uf','ú':'us','ủ':'ur','ũ':'ux','ụ':'uj',
+  'ư':'uw','ừ':'uwf','ứ':'uws','ử':'uwr','ữ':'uwx','ự':'uwj',
+  'ỳ':'yf','ý':'ys','ỷ':'yr','ỹ':'yx','ỵ':'yj',
+  'đ':'dd'
+};
+function telexKeys(ch){
+  const lower=ch.toLowerCase();
+  if(TELEX_BASE[lower])return TELEX_BASE[lower].split('');
+  if(/[a-z0-9;,.\/ ]/.test(lower))return [lower];
+  if(lower==='\n')return ['\n'];
+  return [lower];
+}
+function telexHint(ch){
+  const keys=telexKeys(ch);
+  if(keys[0]==='\n')return 'Enter';
+  if(keys[0]===' ')return 'Space';
+  return keys.map(k=>k.toUpperCase()).join(' + ');
+}
+
+// Tìm phần tử phím an toàn (tránh lỗi selector với \n, ", ...)
+function findKeyEl(k){
+  if(typeof k!=='string'||k.length!==1)return null;
+  if(!(k in FMAP))return null;  // chỉ phím có trong bản đồ mới có trên bàn phím ảo
+  try{
+    const esc=(window.CSS&&CSS.escape)?CSS.escape(k):k;
+    return document.querySelector('.key[data-key="'+esc+'"]');
+  }catch(e){return null}
+}
+
+// Highlight bàn phím cho tab Thơ
+function highlightPoem(ch){
+  document.querySelectorAll('.key.target').forEach(e=>e.classList.remove('target'));
+  document.querySelectorAll('g.finger-active').forEach(e=>{e.classList.remove('finger-active');e.style.removeProperty('--active-color');e.style.removeProperty('--active-stroke')});
+  document.querySelectorAll('.hand-svg.has-active').forEach(e=>e.classList.remove('has-active'));
+  if(ch===undefined||ch===null)return;
+  const keys=telexKeys(ch);
+  const act=(id,color)=>{const g=document.getElementById(id);if(!g)return;g.classList.add('finger-active');g.style.setProperty('--active-color',color);g.style.setProperty('--active-stroke',color);const svg=g.closest('.hand-svg');if(svg)svg.classList.add('has-active')};
+  keys.forEach(k=>{
+    const keyEl=findKeyEl(k);
+    if(keyEl)keyEl.classList.add('target');
+    const info=FMAP[k];
+    if(info){
+      if(info.finger==='thumb'){act('finger-left-thumb',info.color);act('finger-right-thumb',info.color)}
+      else act('finger-'+info.finger,info.color);
+    }
+  });
+}
 
 // ===================== TAB 2: THƠ TIẾNG VIỆT =====================
 const poem={
@@ -490,6 +568,8 @@ const poem={
     // Normalize: replace \n with special marker, trim
     this.normalizedText=p.text.replace(/\r\n/g,'\n');
     this.pos=0;this.correct=0;this.total=0;this.start=null;this.done=false;
+    this._charResults=[];
+    this.buildLines();
     clearInterval(this.timer);speech.cancel();
     document.getElementById('poemManager').style.display='none';
     document.getElementById('poemTyping').style.display='block';
@@ -506,20 +586,70 @@ const poem={
     setTimeout(()=>inp.focus(),100);
   },
 
+  // Tính ranh giới các dòng của bài thơ
+  buildLines(){
+    const t=this.normalizedText;
+    this.lines=[];
+    let start=0;
+    for(let i=0;i<t.length;i++){
+      if(t[i]==='\n'){this.lines.push({start,end:i});start=i+1}
+    }
+    if(start<=t.length)this.lines.push({start,end:t.length});
+  },
+
+  // Dòng hiện tại chứa con trỏ
+  currentLineIdx(){
+    for(let i=0;i<this.lines.length;i++){
+      if(this.pos<=this.lines[i].end)return i;
+    }
+    return this.lines.length-1;
+  },
+
   renderPoemText(){
     const el=document.getElementById('poemDisplay');el.innerHTML='';
     const t=this.normalizedText;
-    for(let i=0;i<t.length;i++){
-      const sp=document.createElement('span');sp.className='char';
-      if(t[i]==='\n'){sp.classList.add('newline');sp.innerHTML='↵<br>'}
-      else if(t[i]===' '){sp.classList.add('space');sp.innerHTML='&nbsp;'}
-      else sp.textContent=t[i];
-      if(i<this.pos){
-        // Check if was correct
-        sp.classList.add(this._charResults[i]?'done':'wrong');
+    const li=this.currentLineIdx();
+    // Chỉ hiển thị 2 dòng: đang gõ + dòng kế tiếp
+    const show=[li,li+1].filter(i=>i<this.lines.length);
+
+    // Nhãn dòng
+    const info=document.createElement('div');
+    info.style.cssText='font-size:11px;color:var(--ink-soft);margin-bottom:6px;font-family:Fredoka,sans-serif;font-weight:600';
+    info.textContent='Dòng '+(li+1)+'/'+this.lines.length;
+    el.appendChild(info);
+
+    show.forEach((lineIdx,n)=>{
+      const line=this.lines[lineIdx];
+      const row=document.createElement('div');
+      row.style.cssText='line-height:1.6;'+(n===1?'opacity:.45;margin-top:4px;':'');
+      for(let i=line.start;i<line.end;i++){
+        const sp=document.createElement('span');sp.className='char';
+        if(t[i]===' '){sp.classList.add('space');sp.innerHTML='&nbsp;'}
+        else sp.textContent=t[i];
+        if(i<this.pos)sp.classList.add(this._charResults[i]?'done':'wrong');
+        if(i===this.pos)sp.classList.add('current');
+        row.appendChild(sp);
       }
-      if(i===this.pos)sp.classList.add('current');
-      el.appendChild(sp);
+      // Ký tự xuống dòng (nếu có)
+      if(line.end<t.length&&t[line.end]==='\n'){
+        const sp=document.createElement('span');sp.className='char';
+        sp.textContent='⏎';
+        sp.style.cssText='color:var(--ink-soft);font-size:.8em;margin-left:6px';
+        if(line.end<this.pos)sp.classList.add(this._charResults[line.end]?'done':'wrong');
+        if(line.end===this.pos)sp.classList.add('current');
+        row.appendChild(sp);
+      }
+      el.appendChild(row);
+    });
+
+    // Highlight bàn phím theo ký tự tiếp theo (Telex)
+    const nextCh=t[this.pos];
+    highlightPoem(nextCh);
+    // Cập nhật gợi ý Telex trong bubble
+    if(nextCh!==undefined){
+      const hint=telexHint(nextCh);
+      const disp=nextCh==='\n'?'xuống dòng':(nextCh===' '?'dấu cách':'"'+nextCh+'"');
+      document.getElementById('poemTelexHint').innerHTML='Gõ '+disp+' → <strong>'+hint+'</strong>';
     }
   },
 
@@ -698,8 +828,13 @@ if(('ontouchstart' in window||navigator.maxTouchPoints>0)&&localStorage.getItem(
 if(window.speechSynthesis){speech.init();speechSynthesis.onvoiceschanged=()=>speech.init()}
 
 document.addEventListener('keydown',e=>{
-  // Only handle ABC tab keys
-  if(document.getElementById('tabAbc').classList.contains('active')){sound.init();onKey(e)}
+  sound.init();
+  if(document.getElementById('tabAbc').classList.contains('active')){onKey(e);return}
+  // Tab Thơ: chỉ hiệu ứng nhấn phím (logic gõ do hidden textarea xử lý)
+  if(e.getModifierState)document.getElementById('capsWarn').classList.toggle('show',e.getModifierState('CapsLock'));
+  const k=(e.key||'').toLowerCase();
+  const kEl=findKeyEl(k);
+  if(kEl){kEl.classList.add('pressed');setTimeout(()=>kEl.classList.remove('pressed'),120)}
 });
 document.getElementById('resetBtn').addEventListener('click',()=>{sound.init();resetAbc()});
 document.getElementById('nextBtn').addEventListener('click',()=>{sound.init();nextAbc()});
