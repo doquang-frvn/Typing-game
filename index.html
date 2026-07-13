@@ -58,7 +58,6 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 
 /* Text display (shared) */
 .text-display{background:#fffaf2;border:2px dashed var(--line);border-radius:14px;padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:clamp(15px,1.7vw,22px);line-height:1.6;letter-spacing:.5px;margin:6px 0;user-select:none;word-wrap:break-word;cursor:text}
-#poemTelexHint{background:var(--warn);color:var(--ink);padding:2px 10px;border-radius:8px;font-weight:700;font-size:12px}
 .char{position:relative;padding:0 1px;border-radius:3px;transition:background .1s,color .1s}
 .char.done{color:var(--success)}.char.wrong{color:#fff;background:var(--danger)}
 .char.current{background:var(--warn);color:var(--ink);animation:blink 1s ease-in-out infinite}
@@ -95,6 +94,17 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .kb-row{display:flex;gap:5px}
 .key{width:clamp(34px,6.2vw,68px);height:clamp(34px,5.4vw,58px);background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;font-weight:600;font-size:clamp(11px,1.6vw,20px);color:var(--ink);box-shadow:0 3px 0 var(--line);position:relative;transition:transform .08s,box-shadow .08s,background .15s;text-transform:uppercase;flex-shrink:0}
 .key.space{width:clamp(180px,38vw,420px)}
+.key.enter{width:clamp(52px,8vw,92px);font-size:clamp(9px,1.1vw,13px)}
+
+/* Chip gợi ý Telex tuần tự */
+#poemTelexHint{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
+.tk-label{color:var(--ink-soft);font-weight:600;margin-right:2px}
+.tk{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;border-radius:7px;font-weight:700;font-size:13px;font-family:'Fredoka',sans-serif;transition:all .15s}
+.tk-done{background:var(--success);color:#fff;opacity:.65}
+.tk-now{background:var(--warn);color:var(--ink);box-shadow:0 0 0 3px rgba(254,202,87,.35);animation:blink 1s ease-in-out infinite}
+.tk-next{background:#f0e6d8;color:var(--ink-soft)}
+.tk-arrow{color:var(--ink-soft);font-size:11px}
+.key.step-done{opacity:.5}
 .key::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:55%;height:3px;border-radius:2px;background:var(--finger-color,transparent)}
 .key.target{background:var(--finger-color);color:#fff;transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.15);animation:pulse-key .7s ease-in-out infinite;z-index:3}
 .key.target::after{display:none}
@@ -406,9 +416,9 @@ const FMAP={
   'h':fm('right-index','Trỏ phải'),'j':fm('right-index','Trỏ phải'),'k':fm('right-middle','Giữa phải'),'l':fm('right-ring','Áp út phải'),';':fm('right-pinky','Út phải'),
   'z':fm('left-pinky','Út trái'),'x':fm('left-ring','Áp út trái'),'c':fm('left-middle','Giữa trái'),'v':fm('left-index','Trỏ trái'),'b':fm('left-index','Trỏ trái'),
   'n':fm('right-index','Trỏ phải'),'m':fm('right-index','Trỏ phải'),',':fm('right-middle','Giữa phải'),'.':fm('right-ring','Áp út phải'),'/':fm('right-pinky','Út phải'),
-  ' ':fm('thumb','Ngón cái')
+  ' ':fm('thumb','Ngón cái'),'\n':fm('right-pinky','Út phải')
 };
-const KB=[['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l',';'],['z','x','c','v','b','n','m',',','.','/'],
+const KB=[['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l',';','\n'],['z','x','c','v','b','n','m',',','.','/'],
 [' ']];
 const EX=[
   {k:'F · J',t:'Bắt đầu với 2 ngón trỏ',x:'fff jjj fjf jfj fjfj jfjf fff jjj fjj jff jfjf fjfj'},
@@ -424,7 +434,11 @@ const EX=[
 ];
 const S={idx:0,text:EX[0].x,pos:0,errors:0,total:0,start:null,timer:null,done:false};
 
-function renderKB(){const el=document.getElementById('keyboard');el.innerHTML='';KB.forEach(row=>{const r=document.createElement('div');r.className='kb-row';row.forEach(k=>{const d=document.createElement('div');d.className='key'+(k===' '?' space':'');d.dataset.key=k;d.textContent=k===' '?'Space':k;const i=FMAP[k];if(i)d.style.setProperty('--finger-color',i.color);r.appendChild(d)});el.appendChild(r)})}
+function renderKB(){const el=document.getElementById('keyboard');el.innerHTML='';KB.forEach(row=>{const r=document.createElement('div');r.className='kb-row';row.forEach(k=>{const d=document.createElement('div');
+  let cls='key';if(k===' ')cls+=' space';if(k==='\n')cls+=' enter';
+  d.className=cls;d.dataset.key=(k==='\n'?'ENTER':k);
+  d.textContent=k===' '?'Space':(k==='\n'?'⏎ Enter':k);
+  const i=FMAP[k];if(i)d.style.setProperty('--finger-color',i.color);r.appendChild(d)});el.appendChild(r)})}
 function renderText(){const el=document.getElementById('textDisplay');el.innerHTML='';for(let i=0;i<S.text.length;i++){const sp=document.createElement('span');sp.className='char';const ch=S.text[i];if(ch===' '){sp.classList.add('space');sp.innerHTML='&nbsp;'}else sp.textContent=ch;if(i<S.pos)sp.classList.add('done');if(i===S.pos)sp.classList.add('current');el.appendChild(sp)}}
 function highlight(){
   document.querySelectorAll('.key.target').forEach(e=>e.classList.remove('target'));
@@ -503,31 +517,51 @@ function telexHint(ch){
 
 // Tìm phần tử phím an toàn (tránh lỗi selector với \n, ", ...)
 function findKeyEl(k){
-  if(typeof k!=='string'||k.length!==1)return null;
-  if(!(k in FMAP))return null;  // chỉ phím có trong bản đồ mới có trên bàn phím ảo
+  if(typeof k!=='string')return null;
+  if(!(k in FMAP))return null;
+  const attr=(k==='\n')?'ENTER':k;
   try{
-    const esc=(window.CSS&&CSS.escape)?CSS.escape(k):k;
+    const esc=(window.CSS&&CSS.escape)?CSS.escape(attr):attr;
     return document.querySelector('.key[data-key="'+esc+'"]');
   }catch(e){return null}
 }
 
-// Highlight bàn phím cho tab Thơ
-function highlightPoem(ch){
+// Highlight bàn phím cho tab Thơ — TUẦN TỰ từng phím theo bước
+function highlightPoem(ch,step){
   document.querySelectorAll('.key.target').forEach(e=>e.classList.remove('target'));
+  document.querySelectorAll('.key.step-done').forEach(e=>e.classList.remove('step-done'));
   document.querySelectorAll('g.finger-active').forEach(e=>{e.classList.remove('finger-active');e.style.removeProperty('--active-color');e.style.removeProperty('--active-stroke')});
   document.querySelectorAll('.hand-svg.has-active').forEach(e=>e.classList.remove('has-active'));
-  if(ch===undefined||ch===null)return;
+
+  const hintBox=document.getElementById('poemTelexHint');
+  if(ch===undefined||ch===null){if(hintBox)hintBox.innerHTML='';return}
+
   const keys=telexKeys(ch);
-  const act=(id,color)=>{const g=document.getElementById(id);if(!g)return;g.classList.add('finger-active');g.style.setProperty('--active-color',color);g.style.setProperty('--active-stroke',color);const svg=g.closest('.hand-svg');if(svg)svg.classList.add('has-active')};
-  keys.forEach(k=>{
-    const keyEl=findKeyEl(k);
-    if(keyEl)keyEl.classList.add('target');
-    const info=FMAP[k];
-    if(info){
-      if(info.finger==='thumb'){act('finger-left-thumb',info.color);act('finger-right-thumb',info.color)}
-      else act('finger-'+info.finger,info.color);
-    }
-  });
+  step=Math.min(step||0,keys.length-1);
+  const cur=keys[step];
+
+  // Chỉ sáng PHÍM HIỆN TẠI
+  const keyEl=findKeyEl(cur);
+  if(keyEl)keyEl.classList.add('target');
+
+  // Ngón tay của phím hiện tại
+  const info=FMAP[cur];
+  if(info){
+    const act=(id,color)=>{const g=document.getElementById(id);if(!g)return;g.classList.add('finger-active');g.style.setProperty('--active-color',color);g.style.setProperty('--active-stroke',color);const svg=g.closest('.hand-svg');if(svg)svg.classList.add('has-active')};
+    if(info.finger==='thumb'){act('finger-left-thumb',info.color);act('finger-right-thumb',info.color)}
+    else act('finger-'+info.finger,info.color);
+  }
+
+  // Chuỗi chip hiển thị: phím đã gõ (xanh) → phím hiện tại (vàng nhấp nháy) → phím sắp gõ (mờ)
+  if(hintBox){
+    const label=k=>k==='\n'?'⏎':(k===' '?'␣':k.toUpperCase());
+    const disp=ch==='\n'?'xuống dòng':(ch===' '?'dấu cách':'"'+ch+'"');
+    const chips=keys.map((k,i)=>{
+      const st=i<step?'tk-done':(i===step?'tk-now':'tk-next');
+      return '<span class="tk '+st+'">'+label(k)+'</span>';
+    }).join('<span class="tk-arrow">→</span>');
+    hintBox.innerHTML='<span class="tk-label">Gõ '+disp+':</span>'+chips;
+  }
 }
 
 // ===================== TAB 2: THƠ TIẾNG VIỆT =====================
@@ -568,7 +602,7 @@ const poem={
     // Normalize: replace \n with special marker, trim
     this.normalizedText=p.text.replace(/\r\n/g,'\n');
     this.pos=0;this.correct=0;this.total=0;this.start=null;this.done=false;
-    this._charResults=[];
+    this._charResults=[];this.step=0;
     this.buildLines();
     clearInterval(this.timer);speech.cancel();
     document.getElementById('poemManager').style.display='none';
@@ -642,14 +676,23 @@ const poem={
       el.appendChild(row);
     });
 
-    // Highlight bàn phím theo ký tự tiếp theo (Telex)
-    const nextCh=t[this.pos];
-    highlightPoem(nextCh);
-    // Cập nhật gợi ý Telex trong bubble
-    if(nextCh!==undefined){
-      const hint=telexHint(nextCh);
-      const disp=nextCh==='\n'?'xuống dòng':(nextCh===' '?'dấu cách':'"'+nextCh+'"');
-      document.getElementById('poemTelexHint').innerHTML='Gõ '+disp+' → <strong>'+hint+'</strong>';
+    // Highlight bàn phím theo ký tự tiếp theo (Telex, tuần tự)
+    highlightPoem(t[this.pos],this.step);
+  },
+
+  // Bước hiện tại trong chuỗi Telex của ký tự đang gõ
+  step:0,
+
+  // Bé nhấn 1 phím → kiểm tra có khớp bước hiện tại không
+  onKeyStep(k){
+    if(this.done)return;
+    const ch=this.normalizedText[this.pos];
+    if(ch===undefined)return;
+    const keys=telexKeys(ch);
+    if(this.step<keys.length&&k===keys[this.step]){
+      this.step++;
+      if(this.step>=keys.length)this.step=keys.length-1; // giữ ở phím cuối tới khi ký tự hoàn thành
+      highlightPoem(ch,this.step);
     }
   },
 
@@ -692,6 +735,9 @@ const poem={
       }
       this.pos=newLen;
     }
+
+    // Con trỏ chuyển sang ký tự mới → reset bước Telex
+    this.step=0;
 
     // Update display
     this.renderPoemText();
@@ -832,9 +878,13 @@ document.addEventListener('keydown',e=>{
   if(document.getElementById('tabAbc').classList.contains('active')){onKey(e);return}
   // Tab Thơ: chỉ hiệu ứng nhấn phím (logic gõ do hidden textarea xử lý)
   if(e.getModifierState)document.getElementById('capsWarn').classList.toggle('show',e.getModifierState('CapsLock'));
-  const k=(e.key||'').toLowerCase();
+  // Tab Thơ: hiệu ứng nhấn + tiến bước Telex
+  if(e.getModifierState)document.getElementById('capsWarn').classList.toggle('show',e.getModifierState('CapsLock'));
+  let k=(e.key||'').toLowerCase();
+  if(e.key==='Enter')k='\n';
   const kEl=findKeyEl(k);
   if(kEl){kEl.classList.add('pressed');setTimeout(()=>kEl.classList.remove('pressed'),120)}
+  if(k.length===1||k==='\n')poem.onKeyStep(k);
 });
 document.getElementById('resetBtn').addEventListener('click',()=>{sound.init();resetAbc()});
 document.getElementById('nextBtn').addEventListener('click',()=>{sound.init();nextAbc()});
