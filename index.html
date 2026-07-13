@@ -1,1273 +1,712 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" translate="no">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-<title>🚀 Sky Typer - Bắn Máy Bay Luyện Gõ</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#fff8ec"/>
+<meta name="google" content="notranslate"/>
+<title>Owly Typing - Bon học gõ bàn phím</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@700;800;900&display=swap');
-:root{--neon-blue:#00e5ff;--neon-green:#69ff47;--neon-yellow:#ffe600;--neon-pink:#ff4081;--neon-orange:#ff9100;--hp-red:#ff1744;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#05050f;font-family:'Nunito',sans-serif;overflow:hidden;width:100vw;height:100vh;height:100dvh;}
-#gameCanvas{touch-action:none;}
-#gameCanvas{display:block;position:absolute;top:0;left:0;}
+:root{--bg-1:#fff8ec;--bg-2:#ffe9d6;--card:#fff;--ink:#3d2c1e;--ink-soft:#8a7560;--line:#f0d9bb;--success:#1dd1a1;--danger:#ff6b6b;--warn:#feca57}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Fredoka',system-ui,sans-serif;color:var(--ink);background:radial-gradient(circle at 10% 10%,#ffd9b3 0%,transparent 40%),radial-gradient(circle at 90% 20%,#b8e6ff 0%,transparent 40%),radial-gradient(circle at 50% 90%,#ffe0f0 0%,transparent 45%),linear-gradient(135deg,var(--bg-1),var(--bg-2));min-height:100vh;padding:10px 14px;overflow-x:hidden}
+.container{max-width:1260px;margin:0 auto;position:relative;z-index:1}
 
-/* ===== SCREENS ===== */
-.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;min-height:100dvh;}
-#introScreen{background:linear-gradient(160deg,#06061a 0%,#0b1240 50%,#140820 100%);}
-#gameOverScreen{background:rgba(0,0,0,0.88);display:none;}
-#customizeScreen{background:linear-gradient(160deg,#060a1a 0%,#0a1830 50%,#08140a 100%);display:none;}
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:10px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:40px;height:40px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 #f0d9bb;font-size:22px}
+.logo h1{font-size:20px;font-weight:700;line-height:1.1}
+.logo p{font-size:11px;color:var(--ink-soft)}
+.stats-bar{display:flex;gap:6px;align-items:center}
+.stat{background:#fff;border-radius:12px;padding:4px 12px;box-shadow:0 3px 0 var(--line);text-align:center;min-width:68px}
+.stat-label{font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.stat-value{font-size:17px;font-weight:700;line-height:1.1}
+.stat-value.ok{color:var(--success)}.stat-value.bad{color:var(--danger)}
+.sound-btn{background:#fff;border:none;border-radius:14px;padding:6px 10px;font-size:20px;cursor:pointer;box-shadow:0 3px 0 var(--line)}
+.sound-btn:active{transform:translateY(2px)}.sound-btn.muted{opacity:.5}
 
-/* STARS */
-.stars-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
-.star{position:absolute;background:white;border-radius:50%;animation:twinkle linear infinite;}
-@keyframes twinkle{0%,100%{opacity:.2;transform:scale(1);}50%{opacity:1;transform:scale(1.5);}}
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tab{flex:1;text-align:center;padding:10px 16px;background:#fff;border-radius:16px 16px 0 0;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 -2px 0 var(--line) inset;opacity:.6;transition:all .2s;border:none;font-family:inherit;color:var(--ink)}
+.tab.active{opacity:1;background:var(--card);box-shadow:none;border-bottom:3px solid var(--success)}
+.tab-icon{font-size:20px;margin-right:6px}
 
-/* INTRO */
-.intro-title{font-family:'Bangers',cursive;font-size:clamp(3rem,8vw,5.5rem);color:var(--neon-yellow);
-  text-shadow:0 0 20px var(--neon-yellow),0 0 40px var(--neon-orange),4px 4px 0 #b36b00,8px 8px 0 #7a4800;
-  letter-spacing:4px;animation:titlePulse 2s ease-in-out infinite;text-align:center;line-height:1.1;}
-@keyframes titlePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.03);}}
-.intro-sub{font-size:clamp(.9rem,2vw,1.2rem);color:var(--neon-blue);margin:6px 0 16px;
-  text-shadow:0 0 10px var(--neon-blue);letter-spacing:2px;}
-.plane-parade{display:flex;gap:16px;margin:10px 0;animation:parade 3s ease-in-out infinite;}
-@keyframes parade{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+/* Card */
+.main-card{background:var(--card);border-radius:0 0 20px 20px;padding:14px 18px;box-shadow:0 5px 0 var(--line),0 10px 25px rgba(61,44,30,.08)}
+.tab-content{display:none}.tab-content.active{display:block}
 
-.card{background:rgba(0,0,0,0.55);border:2px solid var(--neon-blue);border-radius:20px;
-  padding:20px 30px;display:flex;flex-direction:column;align-items:center;gap:12px;
-  box-shadow:0 0 30px rgba(0,229,255,.2);max-width:420px;width:90%;}
-.field-label{color:var(--neon-green);font-size:1rem;font-weight:800;text-shadow:0 0 8px var(--neon-green);letter-spacing:1px;}
-.game-input{width:100%;padding:10px 14px;font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:800;
-  background:rgba(0,229,255,.07);border:2px solid var(--neon-blue);border-radius:12px;color:white;
-  text-align:center;outline:none;transition:border-color .2s,box-shadow .2s;}
-.game-input:focus{border-color:var(--neon-yellow);box-shadow:0 0 15px rgba(255,230,0,.4);}
-.game-input::placeholder{color:rgba(255,255,255,.3);}
+/* Mascot */
+.lesson-row{display:flex;gap:14px;align-items:center;margin-bottom:6px}
+.mascot{width:64px;height:64px;flex-shrink:0}
+.mascot svg{width:100%;height:100%;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.mascot.happy svg{animation:bounce .4s ease}
+.mascot.sad svg{animation:shake .35s ease}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px) scale(1.05)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px) rotate(-2deg)}75%{transform:translateX(3px) rotate(2deg)}}
+.speech-bubble{background:linear-gradient(135deg,#fff5e6,#ffe9d6);border:2px solid var(--line);border-radius:14px;padding:8px 14px;font-size:14px;position:relative;font-weight:500;flex:1}
+.speech-bubble::before{content:'';position:absolute;left:-10px;top:50%;transform:translateY(-50%);border:8px solid transparent;border-right-color:var(--line);border-left:0}
+.speech-bubble::after{content:'';position:absolute;left:-7px;top:50%;transform:translateY(-50%);border:6px solid transparent;border-right-color:#fff5e6;border-left:0}
+.speech-bubble strong{color:var(--success);font-weight:700}
+.finger-chip{display:inline-block;padding:2px 8px;border-radius:10px;color:#fff;font-weight:600;font-size:13px;margin:0 2px}
 
-.btn{font-family:'Bangers',cursive;letter-spacing:3px;border:none;border-radius:50px;
-  color:white;cursor:pointer;transition:transform .1s,box-shadow .1s;text-shadow:2px 2px 0 rgba(0,0,0,.3);}
-.btn:hover{transform:translateY(-3px);}
-.btn:active{transform:translateY(3px);}
-.btn-orange{font-size:1.5rem;padding:12px 44px;background:linear-gradient(135deg,#ff6f00,#ff9100);
-  box-shadow:0 5px 0 #b34700,0 0 25px rgba(255,145,0,.5);animation:btnGlow 1.5s ease-in-out infinite;}
-@keyframes btnGlow{0%,100%{box-shadow:0 5px 0 #b34700,0 0 25px rgba(255,145,0,.5);}
-  50%{box-shadow:0 5px 0 #b34700,0 0 45px rgba(255,145,0,.9);}}
-.btn-blue{font-size:1.2rem;padding:10px 32px;background:linear-gradient(135deg,#0077cc,#00b0ff);
-  box-shadow:0 4px 0 #004a80,0 0 20px rgba(0,176,255,.4);}
-.btn-green{font-size:1.2rem;padding:10px 32px;background:linear-gradient(135deg,#2e7d32,#43a047);
-  box-shadow:0 4px 0 #1b5e20,0 0 20px rgba(67,160,71,.4);}
-.btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
-.how-to{color:rgba(255,255,255,.45);font-size:.8rem;margin-top:4px;text-align:center;line-height:1.6;}
+/* Text display (shared) */
+.text-display{background:#fffaf2;border:2px dashed var(--line);border-radius:14px;padding:12px 18px;font-family:'JetBrains Mono',monospace;font-size:22px;line-height:1.6;letter-spacing:.5px;margin:6px 0;user-select:none;word-wrap:break-word;min-height:60px;cursor:text}
+.char{position:relative;padding:0 1px;border-radius:3px;transition:background .1s,color .1s}
+.char.done{color:var(--success)}.char.wrong{color:#fff;background:var(--danger)}
+.char.current{background:var(--warn);color:var(--ink);animation:blink 1s ease-in-out infinite}
+.char.space{padding:0 4px;position:relative}
+.char.space::before{content:'';position:absolute;left:4px;right:4px;bottom:5px;height:2px;background:var(--line);border-radius:2px}
+.char.space.done::before{background:var(--success);opacity:.5}
+.char.space.current{background:var(--warn)}.char.space.current::before,.char.space.wrong::before{display:none}
+.char.space.wrong{background:var(--danger)}
+.char.newline{display:block;height:8px}
+.char.newline.done{background:none;color:transparent}
+.char.newline.current{background:var(--warn);border-radius:4px;display:inline-block;width:16px;height:20px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.6}}
 
-/* ===== HUD ===== */
-#hud{position:absolute;top:0;left:0;right:0;height:60px;display:flex;align-items:center;
-  padding:0 16px;gap:14px;background:linear-gradient(180deg,rgba(0,0,0,.85) 0%,transparent 100%);
-  z-index:10;pointer-events:none;}
-.hud-block{display:flex;flex-direction:column;align-items:center;min-width:70px;}
-.hud-label{font-size:.6rem;font-weight:900;letter-spacing:2px;color:rgba(255,255,255,.45);text-transform:uppercase;}
-.hud-val{font-family:'Bangers',cursive;font-size:1.5rem;letter-spacing:2px;line-height:1;}
-#hudScore{color:var(--neon-yellow);text-shadow:0 0 10px var(--neon-yellow);}
-#hudLevel{color:var(--neon-green);text-shadow:0 0 10px var(--neon-green);}
-#hudCombo{color:var(--neon-pink);text-shadow:0 0 10px var(--neon-pink);}
-#hudTimer{color:#ff9100;text-shadow:0 0 10px #ff9100;font-size:1.7rem;}
-#hudTimerLabel{color:rgba(255,255,255,.45);}
-.hp-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
-.hp-bar-track{width:min(240px,35vw);height:12px;background:rgba(255,255,255,.1);border-radius:999px;
-  overflow:hidden;border:1px solid rgba(255,255,255,.15);}
-#hpBar{height:100%;width:100%;background:linear-gradient(90deg,#ff1744,#ff6d00);border-radius:999px;
-  transition:width .3s,background .3s;box-shadow:0 0 10px rgba(255,23,68,.5);}
+/* Info bar */
+.info-bar{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink-soft);font-weight:600;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.new-keys{display:inline-block;background:var(--warn);color:var(--ink);padding:1px 8px;border-radius:8px;font-size:11px;font-weight:700;margin-left:4px}
 
-/* TIMER RING */
-#timerRing{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:11;pointer-events:none;}
+/* Progress */
+.progress-track{height:10px;background:#fce8d4;border-radius:8px;position:relative;overflow:hidden;box-shadow:inset 0 2px 3px rgba(0,0,0,.06)}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--success),#7eecc9);border-radius:8px;transition:width .2s}
+.progress-runner{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:14px;transition:left .2s;left:0%}
 
-/* ===== INPUT BAR ===== */
-#inputBar{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:10px;}
-#typingInput{width:min(340px,68vw);padding:11px 18px;font-family:'Nunito',sans-serif;font-size:max(1.4rem,16px);
-  font-weight:900;background:rgba(0,0,0,.78);border:3px solid var(--neon-blue);border-radius:50px;
-  color:var(--neon-green);text-align:center;outline:none;letter-spacing:3px;
-  box-shadow:0 0 20px rgba(0,229,255,.3);text-transform:uppercase;transition:border-color .15s;}
-#typingInput.wrong{border-color:var(--neon-pink);box-shadow:0 0 20px rgba(255,64,129,.5);animation:shake .2s;}
-@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+/* Actions */
+.actions{display:flex;gap:8px;justify-content:center;margin-top:6px;flex-wrap:wrap}
+.btn{border:none;background:#fff;color:var(--ink);font-family:'Fredoka',sans-serif;font-weight:600;font-size:14px;padding:8px 18px;border-radius:12px;box-shadow:0 3px 0 var(--line);cursor:pointer;transition:transform .08s;display:inline-flex;align-items:center;gap:6px}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.btn.primary{background:var(--success);color:#fff;box-shadow:0 3px 0 #16a085}
+.btn.primary:active{box-shadow:0 1px 0 #16a085}
+.btn.danger{background:var(--danger);color:#fff;box-shadow:0 3px 0 #c0392b}
 
-/* LEVEL UP */
-#levelUpOverlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;z-index:50;pointer-events:none;opacity:0;transition:opacity .3s;}
-#levelUpOverlay.show{opacity:1;}
-.level-up-text{font-family:'Bangers',cursive;font-size:clamp(4rem,12vw,8rem);color:var(--neon-yellow);
-  text-shadow:0 0 30px var(--neon-yellow),0 0 60px var(--neon-orange),6px 6px 0 #8a5c00;
-  letter-spacing:8px;animation:luAnim .5s cubic-bezier(.34,1.56,.64,1);}
-@keyframes luAnim{from{transform:scale(.3) rotate(-10deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
-.level-up-sub{font-family:'Bangers',cursive;font-size:clamp(1.5rem,4vw,2.5rem);
-  color:var(--neon-blue);letter-spacing:4px;text-shadow:0 0 15px var(--neon-blue);}
+/* Keyboard */
+.keyboard-zone{position:relative;margin-top:8px}
+.keyboard{display:flex;flex-direction:column;gap:5px;align-items:center;position:relative;z-index:1}
+.kb-row{display:flex;gap:5px}
+.key{min-width:68px;height:58px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;font-weight:600;font-size:20px;color:var(--ink);box-shadow:0 3px 0 var(--line);position:relative;transition:transform .08s,box-shadow .08s,background .15s;text-transform:uppercase}
+.key.space{min-width:420px}
+.key::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:55%;height:3px;border-radius:2px;background:var(--finger-color,transparent)}
+.key.target{background:var(--finger-color);color:#fff;transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.15);animation:pulse-key .7s ease-in-out infinite;z-index:3}
+.key.target::after{display:none}
+@keyframes pulse-key{0%,100%{box-shadow:0 1px 0 rgba(0,0,0,.15),0 0 0 0 var(--finger-color)}50%{box-shadow:0 1px 0 rgba(0,0,0,.15),0 0 0 8px transparent}}
+.key.pressed{transform:translateY(3px);box-shadow:0 0 0 var(--line)}
 
-/* GAME OVER */
-.go-title{font-family:'Bangers',cursive;font-size:clamp(3.5rem,9vw,6rem);
-  color:var(--hp-red);text-shadow:0 0 30px var(--hp-red),5px 5px 0 #7a0000;letter-spacing:6px;}
-.go-player-name{font-family:'Bangers',cursive;font-size:clamp(1.5rem,3.5vw,2.5rem);
-  color:var(--neon-blue);text-shadow:0 0 15px var(--neon-blue);letter-spacing:3px;margin-bottom:4px;}
-.go-stats{margin:12px 0;text-align:center;color:white;font-size:1.2rem;line-height:2;}
-.go-stats span{color:var(--neon-yellow);font-weight:900;}
-.go-badge{background:rgba(255,230,0,.12);border:2px solid var(--neon-yellow);border-radius:12px;
-  padding:6px 20px;font-family:'Bangers',cursive;font-size:1.4rem;color:var(--neon-yellow);
-  letter-spacing:3px;margin-bottom:8px;}
+/* Hands overlay */
+.hands-overlay{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:2;padding:0 2px}
+.hand-svg{width:260px;flex-shrink:0;opacity:.35;-webkit-user-select:none;user-select:none}
+.hand-svg .finger,.hand-svg .palm{fill:#f4c987;stroke:#c8924a;stroke-width:1.5;transition:fill .2s,stroke .2s,opacity .2s}
+.hand-svg .nail{fill:#ffe4b8;stroke:#c8924a;stroke-width:1;transition:fill .2s}
+.hand-svg .eye{fill:#3d2c1e}.hand-svg .cheek{fill:#ff9ec5;opacity:.6}
+.hand-svg g.finger-active .finger{fill:var(--active-color,#1dd1a1);stroke:var(--active-stroke,#16a085);stroke-width:2.5}
+.hand-svg g.finger-active .nail{fill:#fff}
+.hand-svg.has-active{opacity:.55}
+.hand-svg.has-active g.finger-active{opacity:1;filter:drop-shadow(0 0 6px var(--active-color,#1dd1a1));animation:finger-tap .6s ease-in-out infinite}
+@keyframes finger-tap{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.hand-svg g{transform-origin:center center;transform-box:fill-box}
+.caps-warn{display:none;background:#fff3cd;border:2px solid #ffc107;border-radius:10px;padding:6px 14px;font-size:12px;color:#856404;text-align:center;margin-top:6px;font-weight:600}
+.caps-warn.show{display:block}
 
-/* CUSTOMIZE SCREEN */
-.cust-title{font-family:'Bangers',cursive;font-size:clamp(2rem,6vw,4rem);color:var(--neon-green);
-  text-shadow:0 0 20px var(--neon-green);letter-spacing:4px;margin-bottom:4px;}
-.cust-desc{color:rgba(255,255,255,.55);font-size:.85rem;text-align:center;margin-bottom:6px;max-width:380px;}
-.cust-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:420px;}
-.cust-block{display:flex;flex-direction:column;gap:5px;}
-.cust-label{color:rgba(255,255,255,.65);font-size:.8rem;font-weight:800;letter-spacing:1px;}
-.cust-preview{font-family:'Bangers',cursive;font-size:1rem;color:var(--neon-yellow);
-  letter-spacing:2px;min-height:22px;text-shadow:0 0 8px var(--neon-yellow);}
-.color-row{display:flex;gap:6px;flex-wrap:wrap;}
-.color-dot{width:24px;height:24px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s;}
-.color-dot:hover,.color-dot.sel{transform:scale(1.2);border-color:white;}
-select.game-input{cursor:pointer;}
+/* ============ THƠ TAB ============ */
+.poem-selector{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.poem-card{background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 16px;cursor:pointer;transition:all .2s;flex:1;min-width:180px;max-width:300px}
+.poem-card:hover,.poem-card.selected{border-color:var(--success);background:#f0fff8}
+.poem-card h3{font-size:14px;margin-bottom:2px;color:var(--ink)}.poem-card p{font-size:11px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.poem-card .poem-actions{display:flex;gap:4px;margin-top:6px}
+.poem-card .poem-actions button{font-size:11px;padding:3px 8px;border-radius:6px;border:none;cursor:pointer;font-family:inherit;font-weight:600}
+.poem-empty{text-align:center;padding:30px;color:var(--ink-soft);font-size:15px}
 
-/* RADAR */
-#radarCanvas{position:absolute;bottom:70px;right:16px;z-index:9;opacity:.85;}
+/* Add poem form */
+.poem-form{background:#fffaf2;border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;display:none}
+.poem-form.show{display:block}
+.poem-form label{font-size:13px;font-weight:600;color:var(--ink);display:block;margin-bottom:4px}
+.poem-form input,.poem-form textarea{width:100%;border:2px solid var(--line);border-radius:10px;padding:8px 12px;font-family:'Fredoka',sans-serif;font-size:14px;color:var(--ink);outline:none;transition:border .2s;margin-bottom:10px}
+.poem-form input:focus,.poem-form textarea:focus{border-color:var(--success)}
+.poem-form textarea{height:120px;resize:vertical;line-height:1.6}
+.poem-form-actions{display:flex;gap:8px}
 
-/* VOL BTN */
-#volBtn{position:absolute;top:66px;right:14px;z-index:20;background:rgba(0,0,0,.5);
-  border:2px solid rgba(255,255,255,.2);border-radius:10px;color:white;font-size:1.2rem;
-  padding:4px 8px;cursor:pointer;}
-#custBtn{position:absolute;top:66px;right:60px;z-index:20;background:rgba(0,0,0,.5);
-  border:2px solid rgba(255,255,255,.2);border-radius:10px;color:white;font-size:1.2rem;
-  padding:4px 8px;cursor:pointer;}
+/* Hidden input for Vietnamese typing */
+.hidden-input{position:absolute;left:-9999px;top:-9999px;opacity:0}
+
+/* Poem gentle score */
+.gentle-score{text-align:center;padding:8px;font-size:15px;font-weight:600;color:var(--ink);border-radius:12px;margin-top:6px}
+.gentle-score .score-emoji{font-size:28px;display:block;margin-bottom:4px}
+.gentle-score .score-text{color:var(--success)}
+
+/* Overlay */
+.complete-overlay{position:fixed;inset:0;background:rgba(61,44,30,.4);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(6px)}
+.complete-overlay.show{display:flex}
+.complete-card{background:#fff;border-radius:28px;padding:32px;text-align:center;max-width:400px;box-shadow:0 10px 0 var(--line),0 16px 50px rgba(0,0,0,.2);animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
+.complete-card h2{font-size:28px;color:var(--success);margin-bottom:6px}
+.complete-card .stars{font-size:36px;margin:10px 0;letter-spacing:4px}
+.complete-card .summary{color:var(--ink-soft);margin-bottom:16px;font-size:15px}
+.complete-card .summary strong{color:var(--ink);font-size:18px}
+
+/* Tablet tip */
+.tablet-tip{background:linear-gradient(135deg,#fff3d6,#ffe1b3);border:2px solid #ffc870;border-radius:16px;padding:10px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 3px 0 #f0b050}
+.tip-icon{font-size:28px;flex-shrink:0}.tip-content{flex:1;font-size:13px;color:#6b4a1e;line-height:1.4}
+.tip-content strong{color:#4a2f0a}.tip-content em{font-style:normal;font-weight:700;color:#d4691e}
+.tip-close{background:#fff;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:12px;color:#6b4a1e;box-shadow:0 2px 0 #f0b050;flex-shrink:0}
+
+@media(max-width:800px){
+  .key{min-width:42px;height:44px;font-size:14px}.key.space{min-width:220px}
+  .text-display{font-size:18px;padding:10px 14px}.hand-svg{width:150px}
+  .mascot{width:50px;height:50px}.stat{min-width:54px;padding:3px 8px}.stat-value{font-size:14px}
+}
 </style>
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
-<canvas id="radarCanvas" width="110" height="110" style="display:none"></canvas>
-
-<!-- ===== INTRO ===== -->
-<div class="screen" id="introScreen">
-  <div class="stars-bg" id="starsBg"></div>
-  <div class="intro-title">🚀 SKY TYPER</div>
-  <div class="intro-sub">✈️ Bắn Máy Bay · Luyện Gõ Phím ✈️</div>
-  <div class="plane-parade" id="planePare"></div>
-  <div class="card">
-    <div class="field-label">✍️ Tên của bạn là gì?</div>
-    <input class="game-input" type="text" id="playerName" placeholder="VD: Minh, An, Bảo..." maxlength="16" autocomplete="off"/>
-    <div class="btn-row">
-      <button class="btn btn-orange" id="btnStart">BẮT ĐẦU 🚀</button>
-      <button class="btn btn-green" id="btnGoCustomize">🎨 TUỲ CHỈNH</button>
+<div class="container">
+  <header>
+    <div class="logo"><div class="logo-icon">🦉</div><div><h1>Bon học gõ bàn phím</h1><p>Cùng cú con Owly bay thật xa! 🚀</p></div></div>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-label">Tốc độ</div><div class="stat-value" id="wpm">0</div></div>
+      <div class="stat"><div class="stat-label" id="accLabel">Chính xác</div><div class="stat-value ok" id="acc">100%</div></div>
+      <div class="stat"><div class="stat-label">Thời gian</div><div class="stat-value" id="time">0s</div></div>
+      <button class="sound-btn" id="soundBtn" title="Bật/tắt âm thanh">🔊</button>
     </div>
-    <div class="how-to">Gõ từ trên máy bay để bắn hạ!<br>Mỗi màn có <b style="color:#ff9100">giới hạn thời gian</b> — hết giờ là thua!</div>
-  </div>
-</div>
+  </header>
 
-<!-- ===== CUSTOMIZE SCREEN ===== -->
-<div class="screen" id="customizeScreen">
-  <div class="stars-bg" id="starsBg2"></div>
-  <div class="cust-title">🎨 TUỲ CHỈNH GAME</div>
-  <div class="cust-desc">Bạn là nhà thiết kế! Hãy tạo ra phiên bản game của riêng mình 😎</div>
-  <div class="card" style="max-width:460px;gap:14px;">
-    <div class="cust-grid">
-      <div class="cust-block">
-        <div class="cust-label">🏷️ TÊN GAME</div>
-        <input class="game-input" id="custGameTitle" value="SKY TYPER" maxlength="18" autocomplete="off" style="font-size:.95rem;padding:7px 10px;"/>
-        <div class="cust-preview" id="prevTitle">SKY TYPER</div>
+  <div class="tablet-tip" id="tabletTip" style="display:none">
+    <div class="tip-icon">⌨️</div>
+    <div class="tip-content"><strong>Bon ơi,</strong> hãy kết nối <em>bàn phím rời Bluetooth</em> để học gõ 10 ngón nhé!</div>
+    <button class="tip-close" id="tipClose">✕</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-tab="abc"><span class="tab-icon">⌨️</span>Luyện gõ ABC</button>
+    <button class="tab" data-tab="poem"><span class="tab-icon">📝</span>Thơ tiếng Việt</button>
+  </div>
+
+  <div class="main-card">
+    <!-- ==================== TAB 1: ABC ==================== -->
+    <div class="tab-content active" id="tabAbc">
+      <div class="lesson-row">
+        <div class="mascot" id="mascot">
+          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="60" cy="72" rx="38" ry="40" fill="#d4914a"/><ellipse cx="60" cy="78" rx="28" ry="30" fill="#f4c987"/>
+            <ellipse cx="26" cy="70" rx="10" ry="22" fill="#a86d2e" transform="rotate(-15 26 70)"/>
+            <ellipse cx="94" cy="70" rx="10" ry="22" fill="#a86d2e" transform="rotate(15 94 70)"/>
+            <path d="M30 38 Q35 18 50 28" fill="#a86d2e"/><path d="M90 38 Q85 18 70 28" fill="#a86d2e"/>
+            <circle cx="45" cy="50" r="14" fill="#fff"/><circle cx="75" cy="50" r="14" fill="#fff"/>
+            <circle cx="46" cy="50" r="6" fill="#3d2c1e"/><circle cx="74" cy="50" r="6" fill="#3d2c1e"/>
+            <circle cx="48" cy="48" r="2" fill="#fff"/><circle cx="76" cy="48" r="2" fill="#fff"/>
+            <path d="M55 62 L60 72 L65 62 Z" fill="#ff9f43"/>
+            <path d="M50 108 L48 116 M52 108 L54 116" stroke="#ff9f43" stroke-width="3" stroke-linecap="round"/>
+            <path d="M70 108 L72 116 M68 108 L66 116" stroke="#ff9f43" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="speech-bubble" id="bubble">Chào Bon! Gõ phím <strong id="hint-key">F</strong> bằng <span class="finger-chip" id="hint-finger" style="background:#1dd1a1">Trỏ trái</span></div>
       </div>
-      <div class="cust-block">
-        <div class="cust-label">⏱️ THỜI GIAN / MÀN (giây)</div>
-        <select class="game-input" id="custTime" style="font-size:.95rem;padding:7px 10px;">
-          <option value="30">30s — Thử thách!</option>
-          <option value="45" selected>45s — Tiêu chuẩn</option>
-          <option value="60">60s — Dễ thở</option>
-          <option value="90">90s — Nhàn hạ</option>
-        </select>
+      <div class="text-display" id="textDisplay"></div>
+      <div class="info-bar"><span id="exerciseBadge"></span><span>💡 Đặt tay ở A S D F — J K L ;</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div><div class="progress-runner" id="runner">🦉</div></div>
+      <div class="actions">
+        <button class="btn" id="resetBtn">🔄 Làm lại</button>
+        <button class="btn primary" id="nextBtn">➡️ Bài tiếp</button>
       </div>
-      <div class="cust-block">
-        <div class="cust-label">🎮 ĐỘ KHÓ BAN ĐẦU</div>
-        <select class="game-input" id="custDiff" style="font-size:.95rem;padding:7px 10px;">
-          <option value="1">😊 Dễ (màn 1)</option>
-          <option value="2">😐 Bình thường (màn 2)</option>
-          <option value="3">😤 Khó (màn 3)</option>
-        </select>
-      </div>
-      <div class="cust-block">
-        <div class="cust-label">🌈 MÀU CHỦ ĐẠO</div>
-        <div class="color-row" id="colorPicker">
-          <div class="color-dot sel" data-col="#00e5ff" style="background:#00e5ff;"></div>
-          <div class="color-dot" data-col="#69ff47" style="background:#69ff47;"></div>
-          <div class="color-dot" data-col="#ffe600" style="background:#ffe600;"></div>
-          <div class="color-dot" data-col="#ff4081" style="background:#ff4081;"></div>
-          <div class="color-dot" data-col="#ff9100" style="background:#ff9100;"></div>
-          <div class="color-dot" data-col="#ea80fc" style="background:#ea80fc;"></div>
+      <div class="keyboard-zone">
+        <div class="keyboard" id="keyboard"></div>
+        <div class="hands-overlay">
+          <svg class="hand-svg" id="handLeft" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+            <ellipse class="palm" cx="120" cy="140" rx="78" ry="48"/>
+            <g id="finger-left-pinky"><rect class="finger" x="30" y="70" width="32" height="65" rx="16" transform="rotate(-12 46 102)"/><ellipse class="nail" cx="40" cy="74" rx="9" ry="5" transform="rotate(-12 40 74)"/></g>
+            <g id="finger-left-ring"><rect class="finger" x="62" y="42" width="34" height="92" rx="17" transform="rotate(-5 79 88)"/><ellipse class="nail" cx="74" cy="46" rx="10" ry="5" transform="rotate(-5 74 46)"/></g>
+            <g id="finger-left-middle"><rect class="finger" x="100" y="32" width="34" height="100" rx="17"/><ellipse class="nail" cx="117" cy="38" rx="11" ry="5"/></g>
+            <g id="finger-left-index"><rect class="finger" x="138" y="46" width="34" height="88" rx="17" transform="rotate(8 155 90)"/><ellipse class="nail" cx="158" cy="52" rx="10" ry="5" transform="rotate(8 158 52)"/></g>
+            <g id="finger-left-thumb"><rect class="finger" x="170" y="100" width="38" height="56" rx="19" transform="rotate(45 189 128)"/><ellipse class="nail" cx="207" cy="118" rx="9" ry="5" transform="rotate(45 207 118)"/></g>
+            <circle class="eye" cx="100" cy="148" r="2.5"/><circle class="eye" cx="140" cy="148" r="2.5"/>
+            <ellipse class="cheek" cx="92" cy="156" rx="5" ry="3"/><ellipse class="cheek" cx="148" cy="156" rx="5" ry="3"/>
+            <path d="M113 158 Q120 163 127 158" stroke="#3d2c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+          <svg class="hand-svg" id="handRight" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">
+            <ellipse class="palm" cx="120" cy="140" rx="78" ry="48"/>
+            <g id="finger-right-thumb"><rect class="finger" x="32" y="100" width="38" height="56" rx="19" transform="rotate(-45 51 128)"/><ellipse class="nail" cx="33" cy="118" rx="9" ry="5" transform="rotate(-45 33 118)"/></g>
+            <g id="finger-right-index"><rect class="finger" x="68" y="46" width="34" height="88" rx="17" transform="rotate(-8 85 90)"/><ellipse class="nail" cx="82" cy="52" rx="10" ry="5" transform="rotate(-8 82 52)"/></g>
+            <g id="finger-right-middle"><rect class="finger" x="106" y="32" width="34" height="100" rx="17"/><ellipse class="nail" cx="123" cy="38" rx="11" ry="5"/></g>
+            <g id="finger-right-ring"><rect class="finger" x="144" y="42" width="34" height="92" rx="17" transform="rotate(5 161 88)"/><ellipse class="nail" cx="166" cy="46" rx="10" ry="5" transform="rotate(5 166 46)"/></g>
+            <g id="finger-right-pinky"><rect class="finger" x="178" y="70" width="32" height="65" rx="16" transform="rotate(12 194 102)"/><ellipse class="nail" cx="200" cy="74" rx="9" ry="5" transform="rotate(12 200 74)"/></g>
+            <circle class="eye" cx="100" cy="148" r="2.5"/><circle class="eye" cx="140" cy="148" r="2.5"/>
+            <ellipse class="cheek" cx="92" cy="156" rx="5" ry="3"/><ellipse class="cheek" cx="148" cy="156" rx="5" ry="3"/>
+            <path d="M113 158 Q120 163 127 158" stroke="#3d2c1e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
         </div>
       </div>
+      <div class="caps-warn" id="capsWarn">⚠️ CapsLock đang bật! Hãy tắt đi nhé Bon.</div>
     </div>
-    <div class="cust-block" style="width:100%">
-      <div class="cust-label">📢 TIN NHẮN CỔ VŨ (game sẽ đọc to khi lên màn)</div>
-      <input class="game-input" id="custCheer" value="Tuyệt vời! Tiếp tục nào!" maxlength="50" autocomplete="off" style="font-size:.95rem;padding:7px 10px;"/>
+
+    <!-- ==================== TAB 2: THƠ ==================== -->
+    <div class="tab-content" id="tabPoem">
+      <!-- Poem selector / management -->
+      <div id="poemManager">
+        <div class="lesson-row" style="margin-bottom:12px">
+          <div class="mascot" id="mascotPoem">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="60" cy="72" rx="38" ry="40" fill="#d4914a"/><ellipse cx="60" cy="78" rx="28" ry="30" fill="#f4c987"/>
+              <ellipse cx="26" cy="70" rx="10" ry="22" fill="#a86d2e" transform="rotate(-15 26 70)"/>
+              <ellipse cx="94" cy="70" rx="10" ry="22" fill="#a86d2e" transform="rotate(15 94 70)"/>
+              <path d="M30 38 Q35 18 50 28" fill="#a86d2e"/><path d="M90 38 Q85 18 70 28" fill="#a86d2e"/>
+              <circle cx="45" cy="50" r="14" fill="#fff"/><circle cx="75" cy="50" r="14" fill="#fff"/>
+              <circle cx="46" cy="50" r="6" fill="#3d2c1e"/><circle cx="74" cy="50" r="6" fill="#3d2c1e"/>
+              <circle cx="48" cy="48" r="2" fill="#fff"/><circle cx="76" cy="48" r="2" fill="#fff"/>
+              <path d="M55 62 L60 72 L65 62 Z" fill="#ff9f43"/>
+              <path d="M50 108 L48 116 M52 108 L54 116" stroke="#ff9f43" stroke-width="3" stroke-linecap="round"/>
+              <path d="M70 108 L72 116 M68 108 L66 116" stroke="#ff9f43" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="speech-bubble" id="bubblePoem">Bon ơi, chọn một bài thơ để gõ nhé! 📝</div>
+        </div>
+
+        <div class="actions" style="margin-bottom:12px;justify-content:flex-start">
+          <button class="btn primary" id="addPoemBtn">➕ Thêm bài thơ mới</button>
+        </div>
+
+        <div class="poem-form" id="poemForm">
+          <label>Tên bài thơ:</label>
+          <input type="text" id="poemTitle" placeholder="Ví dụ: Đi học" maxlength="100"/>
+          <label>Nội dung (gõ tiếng Việt, xuống dòng bình thường):</label>
+          <textarea id="poemText" placeholder="Hôm nay trời nắng chang chang&#10;Mẹ em đi cấy phơi lưng cả ngày"></textarea>
+          <div class="poem-form-actions">
+            <button class="btn primary" id="savePoemBtn">💾 Lưu</button>
+            <button class="btn" id="cancelPoemBtn">Hủy</button>
+          </div>
+        </div>
+
+        <div id="poemList"></div>
+      </div>
+
+      <!-- Poem typing area (shown when a poem is selected) -->
+      <div id="poemTyping" style="display:none">
+        <div class="lesson-row">
+          <div class="mascot" id="mascotPoemPlay">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="60" cy="72" rx="38" ry="40" fill="#d4914a"/><ellipse cx="60" cy="78" rx="28" ry="30" fill="#f4c987"/>
+              <ellipse cx="26" cy="70" rx="10" ry="22" fill="#a86d2e" transform="rotate(-15 26 70)"/>
+              <ellipse cx="94" cy="70" rx="10" ry="22" fill="#a86d2e" transform="rotate(15 94 70)"/>
+              <path d="M30 38 Q35 18 50 28" fill="#a86d2e"/><path d="M90 38 Q85 18 70 28" fill="#a86d2e"/>
+              <circle cx="45" cy="50" r="14" fill="#fff"/><circle cx="75" cy="50" r="14" fill="#fff"/>
+              <circle cx="46" cy="50" r="6" fill="#3d2c1e"/><circle cx="74" cy="50" r="6" fill="#3d2c1e"/>
+              <circle cx="48" cy="48" r="2" fill="#fff"/><circle cx="76" cy="48" r="2" fill="#fff"/>
+              <path d="M55 62 L60 72 L65 62 Z" fill="#ff9f43"/>
+              <path d="M50 108 L48 116 M52 108 L54 116" stroke="#ff9f43" stroke-width="3" stroke-linecap="round"/>
+              <path d="M70 108 L72 116 M68 108 L66 116" stroke="#ff9f43" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="speech-bubble" id="bubblePoemPlay">Bon ơi, hãy gõ theo bài thơ nhé! Bộ gõ <strong>Telex</strong> đã sẵn sàng 🎹</div>
+        </div>
+        <div class="info-bar"><strong id="poemPlayTitle"></strong><span id="poemCharCount"></span></div>
+        <div class="text-display" id="poemDisplay" tabindex="0"></div>
+        <div class="progress-track"><div class="progress-fill" id="poemProgressFill"></div><div class="progress-runner" id="poemRunner">🦉</div></div>
+        <div class="actions">
+          <button class="btn" id="poemBackBtn">⬅️ Chọn bài khác</button>
+          <button class="btn" id="poemResetBtn">🔄 Làm lại</button>
+        </div>
+        <textarea class="hidden-input" id="poemInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+      </div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-orange" id="btnSaveCustomize">✅ LƯU & CHƠI</button>
-      <button class="btn btn-blue" id="btnBackToIntro">↩️ QUAY LẠI</button>
-    </div>
   </div>
 </div>
 
-<!-- ===== HUD ===== -->
-<div id="hud" style="display:none">
-  <div class="hud-block">
-    <div class="hud-label">ĐIỂM</div>
-    <div class="hud-val" id="hudScore">0</div>
-  </div>
-  <div class="hud-block">
-    <div class="hud-label">MÀN</div>
-    <div class="hud-val" id="hudLevel">1</div>
-  </div>
-  <div class="hud-block">
-    <div class="hud-label">COMBO</div>
-    <div class="hud-val" id="hudCombo">x1</div>
-  </div>
-  <div class="hud-block" style="min-width:50px">
-    <div class="hud-label" id="hudTimerLabel">⏱️ GIỜ</div>
-    <div class="hud-val" id="hudTimer">45</div>
-  </div>
-  <div class="hud-block">
-    <div class="hud-label">NGƯỜI CHƠI</div>
-    <div class="hud-val" id="hudName" style="font-family:Nunito;font-size:.95rem;">-</div>
-  </div>
-  <div class="hp-bar-wrap">
-    <div class="hud-label">❤️ CƠ SỞ</div>
-    <div class="hp-bar-track"><div id="hpBar"></div></div>
+<!-- OVERLAY -->
+<div class="complete-overlay" id="overlay">
+  <div class="complete-card">
+    <div style="font-size:52px" id="overlayEmoji">🦉🎉</div>
+    <h2 id="completeTitle">Bon giỏi quá!</h2>
+    <div class="stars" id="stars">⭐⭐⭐</div>
+    <div class="summary" id="completeSummary">Tốc độ: <strong id="finalWpm">0</strong> WPM<br>Chính xác: <strong id="finalAcc">0%</strong></div>
+    <button class="btn primary" id="continueBtn">Bay tiếp nào, Bon! 🚀</button>
   </div>
 </div>
-
-<!-- INPUT -->
-<div id="inputBar" style="display:none">
-  <input type="text" id="typingInput" placeholder="GÕ PHÍM..." autocomplete="off" spellcheck="false"/>
-</div>
-
-<!-- LEVEL UP -->
-<div id="levelUpOverlay">
-  <div class="level-up-text" id="luText">LEVEL UP!</div>
-  <div class="level-up-sub" id="luSub">MÀN 2</div>
-</div>
-
-<!-- GAME OVER -->
-<div class="screen" id="gameOverScreen">
-  <div class="go-player-name" id="goName"></div>
-  <div class="go-title">GAME OVER</div>
-  <div class="go-badge" id="goBadge">⭐ NGƯỜI MỚI</div>
-  <div class="go-stats">
-    Điểm số: <span id="goScore">0</span> &nbsp;|&nbsp; Màn cao nhất: <span id="goLevel">1</span><br>
-    Máy bay bắn hạ: <span id="goKills">0</span> &nbsp;|&nbsp; Tốc độ gõ: <span id="goWpm">0</span> WPM<br>
-    🏆 Kỷ lục: <span id="goHigh">0</span>
-  </div>
-  <div class="btn-row">
-    <button class="btn btn-orange" id="btnRetry">🔄 CHƠI LẠI</button>
-    <button class="btn btn-blue" id="btnRetryCustomize">🎨 TUỲ CHỈNH</button>
-  </div>
-</div>
-
-<button id="volBtn" style="display:none">🔊</button>
-<button id="custBtn" style="display:none">🎨</button>
 
 <script>
-// ============================================================
-//  WORD BANK
-// ============================================================
-const WORDS={
-  1:['cat','dog','run','fly','big','red','sun','cup','map','hat','box','car','bus','arm','leg','eye','ear','sky','bee','ant'],
-  2:['fish','bird','frog','star','moon','ball','book','cake','milk','fire','tree','leaf','door','rain','wind','snow','jump','swim','sing','play'],
-  3:['apple','tiger','water','cloud','happy','sunny','earth','magic','brave','candy','dance','dream','green','honey','juice','smile','tiger','grape','light','brave'],
-  4:['rabbit','garden','yellow','winter','banana','castle','dragon','forest','guitar','island','jungle','kitten','lemon','orange','purple','silver','castle','flower'],
-  5:['butterfly','adventure','birthday','calendar','computer','elephant','fantastic','umbrella','universe','volcano','wonderful','champion','lightning','discovery']
+/* =================================================================
+   OWLY TYPING — Bon học gõ bàn phím
+   Version 2.0 — ABC + Thơ tiếng Việt (Telex)
+   ================================================================= */
+
+// ===================== SHARED =====================
+// Sound
+const speech={on:true,voice:null,
+  init(){if(!window.speechSynthesis)return;const v=speechSynthesis.getVoices();this.voice=v.find(x=>x.lang.startsWith('vi'))||null},
+  say(t){if(!this.on||!speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='vi-VN';if(this.voice)u.voice=this.voice;u.rate=1;u.pitch=1.15;u.volume=.9;speechSynthesis.speak(u)},
+  cancel(){if(speechSynthesis)speechSynthesis.cancel()},
+  load(){const v=localStorage.getItem('bon-speech');if(v!==null)this.on=v==='1'}
 };
-
-// ============================================================
-//  CUSTOMIZATION STATE
-// ============================================================
-let custState={
-  gameTitle:'SKY TYPER',
-  timePerLevel:45,
-  startLevel:1,
-  themeColor:'#00e5ff',
-  cheerMsg:'Tuyệt vời! Tiếp tục nào!'
+const sound={ctx:null,on:true,
+  init(){if(!this.ctx)try{this.ctx=new(AudioContext||webkitAudioContext)}catch(e){}if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume()},
+  beep(f,d,type,vol){if(!this.on||!this.ctx)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type=type||'sine';o.frequency.value=f;o.connect(g);g.connect(this.ctx.destination);const t=this.ctx.currentTime;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.1,t+.005);g.gain.exponentialRampToValueAtTime(.001,t+d);o.start(t);o.stop(t+d)},
+  correct(){this.beep(880,.08,'sine',.1)},
+  wrong(){if(!this.on||!this.ctx)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';const t=this.ctx.currentTime;o.frequency.setValueAtTime(420,t);o.frequency.exponentialRampToValueAtTime(280,t+.12);o.connect(g);g.connect(this.ctx.destination);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.05,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.15);o.start(t);o.stop(t+.15)},
+  win(){if(!this.on||!this.ctx)return;const s=this;[523,659,784,1047].forEach((f,i)=>setTimeout(()=>s.beep(f,.2,'triangle',.13),i*120))},
+  toggle(){this.on=!this.on;speech.on=this.on;if(!this.on)speech.cancel();localStorage.setItem('bon-sound',this.on?'1':'0');localStorage.setItem('bon-speech',this.on?'1':'0');const b=document.getElementById('soundBtn');b.textContent=this.on?'🔊':'🔇';b.classList.toggle('muted',!this.on)},
+  load(){const v=localStorage.getItem('bon-sound');if(v!==null){this.on=v==='1';const b=document.getElementById('soundBtn');b.textContent=this.on?'🔊':'🔇';b.classList.toggle('muted',!this.on)}}
 };
+let moodT=null;
+function setMood(id,m){const el=document.getElementById(id);el.classList.remove('happy','sad');void el.offsetWidth;el.classList.add(m);clearTimeout(moodT);moodT=setTimeout(()=>el.classList.remove('happy','sad'),400)}
 
-// ============================================================
-//  AUDIO ENGINE
-// ============================================================
-let audioCtx=null,bgGain=null,masterGain=null,muted=false,bgTimers=[];
-
-function ensureAudio(){
-  if(audioCtx) return;
-  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  masterGain=audioCtx.createGain();
-  masterGain.gain.value=1;
-  masterGain.connect(audioCtx.destination);
-}
-
-function playShoot(){
-  if(!audioCtx||muted) return;
-  const t=audioCtx.currentTime;
-  // rocket whoosh
-  const buf=audioCtx.sampleRate*.18;
-  const b=audioCtx.createBuffer(1,buf,audioCtx.sampleRate);
-  const d=b.getChannelData(0);
-  for(let i=0;i<buf;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/buf,2);
-  const src=audioCtx.createBufferSource(); src.buffer=b;
-  const flt=audioCtx.createBiquadFilter(); flt.type='bandpass'; flt.frequency.value=1200; flt.Q.value=0.8;
-  const g=audioCtx.createGain(); g.gain.setValueAtTime(.18,t); g.gain.exponentialRampToValueAtTime(.001,t+.18);
-  src.connect(flt); flt.connect(g); g.connect(masterGain);
-  src.start(t); src.stop(t+.18);
-  // tone ping
-  const o=audioCtx.createOscillator(); const g2=audioCtx.createGain();
-  o.connect(g2); g2.connect(masterGain);
-  o.type='sine'; o.frequency.setValueAtTime(1100,t); o.frequency.exponentialRampToValueAtTime(400,t+.1);
-  g2.gain.setValueAtTime(.12,t); g2.gain.exponentialRampToValueAtTime(.001,t+.12);
-  o.start(t); o.stop(t+.12);
-}
-
-function playExplosion(){
-  if(!audioCtx||muted) return;
-  const t=audioCtx.currentTime;
-  const sz=audioCtx.sampleRate*.5;
-  const b=audioCtx.createBuffer(1,sz,audioCtx.sampleRate);
-  const d=b.getChannelData(0);
-  for(let i=0;i<sz;i++) d[i]=(Math.random()*2-1);
-  const src=audioCtx.createBufferSource(); src.buffer=b;
-  const flt=audioCtx.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=700;
-  const g=audioCtx.createGain(); g.gain.setValueAtTime(.7,t); g.gain.exponentialRampToValueAtTime(.001,t+.5);
-  src.connect(flt); flt.connect(g); g.connect(masterGain);
-  src.start(t); src.stop(t+.5);
-  const o=audioCtx.createOscillator(); const g2=audioCtx.createGain();
-  o.connect(g2); g2.connect(masterGain);
-  o.type='sine'; o.frequency.setValueAtTime(140,t); o.frequency.exponentialRampToValueAtTime(35,t+.3);
-  g2.gain.setValueAtTime(.55,t); g2.gain.exponentialRampToValueAtTime(.001,t+.3);
-  o.start(t); o.stop(t+.3);
-}
-
-function playLevelUp(){
-  if(!audioCtx||muted) return;
-  [523,659,784,1047,1318].forEach((f,i)=>{
-    const t=audioCtx.currentTime+i*.1;
-    const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
-    o.connect(g); g.connect(masterGain);
-    o.type='square'; o.frequency.value=f;
-    g.gain.setValueAtTime(.18,t); g.gain.exponentialRampToValueAtTime(.001,t+.18);
-    o.start(t); o.stop(t+.18);
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab==='abc'?'tabAbc':'tabPoem').classList.add('active');
   });
+});
+
+// Show overlay
+function showOverlay(emoji,title,stars,summary,btnText,btnAction){
+  document.getElementById('overlayEmoji').textContent=emoji;
+  document.getElementById('completeTitle').textContent=title;
+  document.getElementById('stars').textContent=stars;
+  document.getElementById('completeSummary').innerHTML=summary;
+  document.getElementById('continueBtn').textContent=btnText;
+  document.getElementById('continueBtn').onclick=()=>{sound.init();btnAction()};
+  document.getElementById('overlay').classList.add('show');
 }
+function hideOverlay(){document.getElementById('overlay').classList.remove('show')}
 
-function playTimerWarn(){
-  if(!audioCtx||muted) return;
-  const t=audioCtx.currentTime;
-  const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
-  o.connect(g); g.connect(masterGain);
-  o.type='square'; o.frequency.value=880;
-  g.gain.setValueAtTime(.1,t); g.gain.exponentialRampToValueAtTime(.001,t+.08);
-  o.start(t); o.stop(t+.08);
-}
-
-function playMiss(){
-  if(!audioCtx||muted) return;
-  const t=audioCtx.currentTime;
-  const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
-  o.connect(g); g.connect(masterGain);
-  o.type='sawtooth'; o.frequency.setValueAtTime(200,t); o.frequency.exponentialRampToValueAtTime(80,t+.3);
-  g.gain.setValueAtTime(.28,t); g.gain.exponentialRampToValueAtTime(.001,t+.3);
-  o.start(t); o.stop(t+.3);
-}
-
-function startBGM(lv){} // BGM đã tắt
-
-function stopBGM(){bgTimers.forEach(clearTimeout);bgTimers=[];bgGain=null;}
-
-// ============================================================
-//  TTS
-// ============================================================
-function speak(text){
-  if(!window.speechSynthesis||muted) return;
-  window.speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text);
-  u.lang='vi-VN'; u.rate=.92; u.pitch=1.15; u.volume=.95;
-  window.speechSynthesis.speak(u);
-}
-
-// Hàng đợi đọc từ tiếng Anh — không cancel lẫn nhau, không đè tiếng Việt
-const enQueue=[];
-let enSpeaking=false;
-function speakEN(word){
-  if(!window.speechSynthesis||muted) return;
-  enQueue.push(word);
-  if(!enSpeaking) drainEN();
-}
-function drainEN(){
-  if(enQueue.length===0){enSpeaking=false;return;}
-  enSpeaking=true;
-  const w=enQueue.shift();
-  const u=new SpeechSynthesisUtterance(w);
-  u.lang='en-US'; u.rate=0.78; u.pitch=1.1; u.volume=1;
-  u.onend=()=>drainEN();
-  u.onerror=()=>{enSpeaking=false;drainEN();};
-  window.speechSynthesis.speak(u);
-}
-
-// Radar ping — âm thanh sonar/ping khi kim quét qua blip
-// Mỗi plane có lastPingTime riêng — không blip nào bị chặn bởi blip khác
-function playRadarPing(dist01, plane){
-  if(!audioCtx||muted) return;
-  const now = audioCtx.currentTime;
-  if(plane._lastPing && now - plane._lastPing < 0.4) return; // 0.4s / blip
-  plane._lastPing = now;
-  const freq = 1100 - dist01*600;
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.connect(g); g.connect(masterGain);
-  o.type = 'sine';
-  o.frequency.setValueAtTime(freq, now);
-  o.frequency.exponentialRampToValueAtTime(freq*.55, now+.14);
-  g.gain.setValueAtTime(.06, now);
-  g.gain.exponentialRampToValueAtTime(.001, now+.22);
-  o.start(now); o.stop(now+.22);
-}
-
-// ============================================================
-//  CANVAS
-// ============================================================
-const canvas=document.getElementById('gameCanvas');
-const ctx=canvas.getContext('2d');
-const radarCanvas=document.getElementById('radarCanvas');
-const rCtx=radarCanvas.getContext('2d');
-
-function resize(){
-  // visualViewport chính xác hơn trên Android (không bị ảnh hưởng bởi thanh địa chỉ)
-  const vp = window.visualViewport || window;
-  canvas.width  = vp.width  || window.innerWidth;
-  canvas.height = vp.height || window.innerHeight;
-}
-resize();
-window.addEventListener('resize', resize);
-if(window.visualViewport) window.visualViewport.addEventListener('resize', resize);
-window.addEventListener('orientationchange', ()=>{ setTimeout(resize, 200); });
-
-// ============================================================
-//  GAME STATE
-// ============================================================
-let playerName='Người chơi',score=0,level=1,hp=100,combo=1,comboTimer=0,kills=0;
-let highScore=parseInt(localStorage.getItem('skytyper_hs')||'0');
-let gameRunning=false,targetPlane=null;
-let planes=[],bullets=[],particles=[],stars=[];
-let spawnTimer=0,frameCount=0,killsForLevel=0,KILLS_TO_LEVEL=8;
-let levelTimer=45,levelTimerFrac=0,lastTimerSec=45,warnPlayed=false,pendingLevelUp=false;
-let totalWordsTyped=0,gameStartTime=0;
-let radarAngle=0;
-let screenShake=0;
-
-function getLevelCfg(lv){
-  return{
-    speed:Math.min(1.4+lv*.35, 4.5),
-    spawnInterval:Math.max(80,220-lv*16),
-    maxPlanes:Math.min(2+Math.floor(lv*.6),5),
-    wordTier:Math.min(Math.ceil(lv/2),5),
-    timeBonus:lv*8
-  };
-}
-
-// ============================================================
-//  STARS
-// ============================================================
-function generateStars(){
-  stars=[];
-  for(let i=0;i<100;i++){
-    stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,
-      r:Math.random()*1.4+.3,speed:Math.random()*.25+.04,
-      alpha:Math.random(), twinkleOffset:Math.random()*6.28});
-  }
-}
-
-// ============================================================
-//  PLANE COLORS
-// ============================================================
-const PLANE_COLORS=[
-  {body:'#e53935',wing:'#b71c1c',cockpit:'#80cbc4',stripe:'#ff8a80',engine:'#ff6d00'},
-  {body:'#1e88e5',wing:'#0d47a1',cockpit:'#fff9c4',stripe:'#82b1ff',engine:'#00b0ff'},
-  {body:'#43a047',wing:'#1b5e20',cockpit:'#f48fb1',stripe:'#b9f6ca',engine:'#69ff47'},
-  {body:'#fb8c00',wing:'#e65100',cockpit:'#b3e5fc',stripe:'#ffe57f',engine:'#ffd740'},
-  {body:'#8e24aa',wing:'#4a148c',cockpit:'#f0f4c3',stripe:'#ea80fc',engine:'#ce93d8'},
-  {body:'#00acc1',wing:'#006064',cockpit:'#ffccbc',stripe:'#84ffff',engine:'#00e5ff'},
+// ===================== TAB 1: ABC =====================
+const C={'left-pinky':'#ff6b6b','left-ring':'#ff9f43','left-middle':'#feca57','left-index':'#1dd1a1','right-index':'#54a0ff','right-middle':'#a55eea','right-ring':'#ff9ff3','right-pinky':'#d2691e','thumb':'#c8d6e5'};
+const fm=(f,l)=>({finger:f,label:l,color:C[f]});
+const FMAP={
+  '1':fm('left-pinky','Út trái'),'2':fm('left-ring','Áp út trái'),'3':fm('left-middle','Giữa trái'),'4':fm('left-index','Trỏ trái'),'5':fm('left-index','Trỏ trái'),
+  '6':fm('right-index','Trỏ phải'),'7':fm('right-index','Trỏ phải'),'8':fm('right-middle','Giữa phải'),'9':fm('right-ring','Áp út phải'),'0':fm('right-pinky','Út phải'),
+  'q':fm('left-pinky','Út trái'),'w':fm('left-ring','Áp út trái'),'e':fm('left-middle','Giữa trái'),'r':fm('left-index','Trỏ trái'),'t':fm('left-index','Trỏ trái'),
+  'y':fm('right-index','Trỏ phải'),'u':fm('right-index','Trỏ phải'),'i':fm('right-middle','Giữa phải'),'o':fm('right-ring','Áp út phải'),'p':fm('right-pinky','Út phải'),
+  'a':fm('left-pinky','Út trái'),'s':fm('left-ring','Áp út trái'),'d':fm('left-middle','Giữa trái'),'f':fm('left-index','Trỏ trái'),'g':fm('left-index','Trỏ trái'),
+  'h':fm('right-index','Trỏ phải'),'j':fm('right-index','Trỏ phải'),'k':fm('right-middle','Giữa phải'),'l':fm('right-ring','Áp út phải'),';':fm('right-pinky','Út phải'),
+  'z':fm('left-pinky','Út trái'),'x':fm('left-ring','Áp út trái'),'c':fm('left-middle','Giữa trái'),'v':fm('left-index','Trỏ trái'),'b':fm('left-index','Trỏ trái'),
+  'n':fm('right-index','Trỏ phải'),'m':fm('right-index','Trỏ phải'),',':fm('right-middle','Giữa phải'),'.':fm('right-ring','Áp út phải'),'/':fm('right-pinky','Út phải'),
+  ' ':fm('thumb','Ngón cái')
+};
+const KB=[['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l',';'],['z','x','c','v','b','n','m',',','.','/'],
+[' ']];
+const EX=[
+  {k:'F · J',t:'Bắt đầu với 2 ngón trỏ',x:'fff jjj fjf jfj fjfj jfjf fff jjj fjj jff jfjf fjfj'},
+  {k:'D · K',t:'Thêm 2 ngón giữa',x:'ddd kkk dkd kdk djk fkd dkfj kjfd jkdf fjdk fdjk kdjf'},
+  {k:'S · L',t:'Thêm 2 ngón áp út',x:'sss lll sld kfs ljk fds lkj fjsl ksdl jdks fjdk slkf'},
+  {k:'A · ;',t:'Hoàn thành hàng giữa',x:'asdf jkl; a;a; ;a;a fdsa ;lkj asd jkl flask glad lass'},
+  {k:'G · H',t:'Ngón trỏ vào giữa',x:'fgf jhj fghj hjgf gha hag fgh jhg flag hash glad gash dash'},
+  {k:'E · I',t:'Lên hàng trên - ngón giữa',x:'ded kik eik ide led lie kid die idea like life lake desk'},
+  {k:'R · U',t:'Lên hàng trên - ngón trỏ',x:'frf juj fru ujr rude fire user rule ruler reuse fruit jury'},
+  {k:'T · Y',t:'Ngón trỏ phím giữa',x:'ftf jyj fty ytf tasty hurry style truly tidy lyric type try'},
+  {k:'W · O',t:'Hàng trên - ngón áp út',x:'sws lol wol low wow slow flow show world worst follow yellow'},
+  {k:'Q · P',t:'Hoàn thành hàng trên',x:'qaq p;p pop quit happy proud quiet party people simple jolly'},
 ];
+const S={idx:0,text:EX[0].x,pos:0,errors:0,total:0,start:null,timer:null,done:false};
 
-// ============================================================
-//  DRAW PLANE (Roblox-blocky)
-// ============================================================
-function drawPlane(x,y,sc,ci,flip,damaged){
-  const c=PLANE_COLORS[ci%PLANE_COLORS.length];
-  ctx.save();
-  ctx.translate(x,y);
-  if(flip) ctx.scale(-1,1);
-  ctx.scale(sc,sc);
-  if(damaged){ctx.translate((Math.random()-.5)*3,(Math.random()-.5)*3);}
-
-  // body
-  ctx.fillStyle=c.body;
-  ctx.beginPath(); ctx.roundRect(-28,-12,56,24,5); ctx.fill();
-  // body highlight
-  ctx.fillStyle='rgba(255,255,255,.16)';
-  ctx.beginPath(); ctx.roundRect(-24,-11,44,9,3); ctx.fill();
-  // nose
-  ctx.fillStyle=c.wing;
-  ctx.beginPath(); ctx.moveTo(28,-10); ctx.lineTo(50,0); ctx.lineTo(28,10); ctx.closePath(); ctx.fill();
-  // wings
-  ctx.fillStyle=c.wing;
-  ctx.beginPath(); ctx.moveTo(-4,-12); ctx.lineTo(16,-42); ctx.lineTo(22,-12); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(-4,12); ctx.lineTo(16,42); ctx.lineTo(22,12); ctx.closePath(); ctx.fill();
-  // wing highlight
-  ctx.fillStyle='rgba(255,255,255,.1)';
-  ctx.beginPath(); ctx.moveTo(-2,-12); ctx.lineTo(10,-30); ctx.lineTo(14,-12); ctx.closePath(); ctx.fill();
-  // tail fins
-  ctx.fillStyle=c.stripe;
-  ctx.beginPath(); ctx.moveTo(-28,-12); ctx.lineTo(-46,-30); ctx.lineTo(-18,-12); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(-28,12); ctx.lineTo(-46,30); ctx.lineTo(-18,12); ctx.closePath(); ctx.fill();
-  // cockpit
-  ctx.fillStyle=c.cockpit;
-  ctx.beginPath(); ctx.roundRect(4,-8,18,16,4); ctx.fill();
-  ctx.strokeStyle='rgba(0,0,0,.3)'; ctx.lineWidth=1.5; ctx.stroke();
-  // cockpit glare
-  ctx.fillStyle='rgba(255,255,255,.35)';
-  ctx.beginPath(); ctx.roundRect(6,-6,7,6,2); ctx.fill();
-  // engine
-  ctx.fillStyle='#37474f';
-  ctx.beginPath(); ctx.arc(-20,0,8,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle=c.engine;
-  ctx.beginPath(); ctx.arc(-20,0,5,0,Math.PI*2); ctx.fill();
-  // exhaust flame (animated)
-  const fFlicker=.7+Math.sin(frameCount*.3)*0.3;
-  const fg=ctx.createRadialGradient(-20,0,0,-20,0,10*fFlicker);
-  fg.addColorStop(0,'rgba(255,255,200,.9)');
-  fg.addColorStop(.5,`rgba(255,120,0,.7)`);
-  fg.addColorStop(1,'rgba(255,50,0,0)');
-  ctx.fillStyle=fg;
-  ctx.beginPath(); ctx.ellipse(-30,0,12*fFlicker,5*fFlicker,0,0,Math.PI*2); ctx.fill();
-  // stripe decal
-  ctx.fillStyle=c.stripe;
-  ctx.fillRect(-8,-12,5,24);
-  // bolts
-  ctx.fillStyle='rgba(0,0,0,.25)';
-  [-22,-10,5,18].forEach(bx=>{
-    ctx.beginPath(); ctx.arc(bx,-9,2,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(bx,9,2,0,Math.PI*2); ctx.fill();
-  });
-  // damage smoke removed — too costly per frame
-  ctx.restore();
+function renderKB(){const el=document.getElementById('keyboard');el.innerHTML='';KB.forEach(row=>{const r=document.createElement('div');r.className='kb-row';row.forEach(k=>{const d=document.createElement('div');d.className='key'+(k===' '?' space':'');d.dataset.key=k;d.textContent=k===' '?'Space':k;const i=FMAP[k];if(i)d.style.setProperty('--finger-color',i.color);r.appendChild(d)});el.appendChild(r)})}
+function renderText(){const el=document.getElementById('textDisplay');el.innerHTML='';for(let i=0;i<S.text.length;i++){const sp=document.createElement('span');sp.className='char';const ch=S.text[i];if(ch===' '){sp.classList.add('space');sp.innerHTML='&nbsp;'}else sp.textContent=ch;if(i<S.pos)sp.classList.add('done');if(i===S.pos)sp.classList.add('current');el.appendChild(sp)}}
+function highlight(){
+  document.querySelectorAll('.key.target').forEach(e=>e.classList.remove('target'));
+  document.querySelectorAll('g.finger-active').forEach(e=>{e.classList.remove('finger-active');e.style.removeProperty('--active-color');e.style.removeProperty('--active-stroke')});
+  document.querySelectorAll('.hand-svg.has-active').forEach(e=>e.classList.remove('has-active'));
+  if(S.done)return;const ch=S.text[S.pos];if(!ch)return;
+  const keyEl=document.querySelector('.key[data-key="'+ch+'"]');if(keyEl)keyEl.classList.add('target');
+  const info=FMAP[ch];if(!info)return;
+  document.getElementById('hint-key').textContent=ch===' '?'Space':ch.toUpperCase();
+  const fc=document.getElementById('hint-finger');fc.textContent=info.label;fc.style.background=info.color;
+  const act=(id,color)=>{const g=document.getElementById(id);if(!g)return;g.classList.add('finger-active');g.style.setProperty('--active-color',color);g.style.setProperty('--active-stroke',color);const svg=g.closest('.hand-svg');if(svg)svg.classList.add('has-active')};
+  if(info.finger==='thumb'){act('finger-left-thumb',info.color);act('finger-right-thumb',info.color)}else act('finger-'+info.finger,info.color);
 }
-
-// ============================================================
-//  DRAW GUN (rocket launcher)
-// ============================================================
-function drawGun(x,y,angle){
-  ctx.save();
-  ctx.translate(x,y);
-  // platform shadow
-  ctx.fillStyle='rgba(0,0,0,.35)';
-  ctx.beginPath(); ctx.ellipse(0,16,36,8,0,0,Math.PI*2); ctx.fill();
-  // base
-  ctx.fillStyle='#263238';
-  ctx.beginPath(); ctx.roundRect(-30,-12,60,24,7); ctx.fill();
-  ctx.strokeStyle='#37474f'; ctx.lineWidth=2; ctx.stroke();
-  // bolts on base
-  ctx.fillStyle='#455a64';
-  [-22,22].forEach(bx=>{
-    ctx.beginPath(); ctx.arc(bx,0,5,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#78909c';
-    ctx.beginPath(); ctx.arc(bx,0,3,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#455a64';
-  });
-  // turret dome
-  ctx.save(); ctx.rotate(angle||0);
-  ctx.fillStyle='#37474f';
-  ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='#546e7a'; ctx.lineWidth=2; ctx.stroke();
-  // barrel
-  ctx.fillStyle='#607d8b';
-  ctx.beginPath(); ctx.roundRect(-5,-36,10,30,4); ctx.fill();
-  ctx.strokeStyle='#455a64'; ctx.lineWidth=1.5; ctx.stroke();
-  // barrel ring
-  ctx.fillStyle='#78909c';
-  ctx.beginPath(); ctx.roundRect(-7,-18,14,6,2); ctx.fill();
-  // muzzle
-  ctx.fillStyle='#546e7a';
-  ctx.beginPath(); ctx.roundRect(-6,-42,12,10,3); ctx.fill();
-  // muzzle glow
-  ctx.fillStyle='rgba(255,220,64,.5)';
-  ctx.beginPath(); ctx.arc(0,-42,10,0,Math.PI*2); ctx.fill();
-  ctx.restore();
-  // highlight
-  ctx.fillStyle='rgba(255,255,255,.1)';
-  ctx.beginPath(); ctx.roundRect(-22,-8,10,16,3); ctx.fill();
-  ctx.restore();
+function onKey(e){
+  if(S.done)return;
+  if(e.getModifierState)document.getElementById('capsWarn').classList.toggle('show',e.getModifierState('CapsLock'));
+  const key=e.key;if(key==='Tab'||key==='Enter'||key==='Escape'){e.preventDefault();return}
+  if(key.length!==1)return;if(key===' ')e.preventDefault();
+  if(S.start===null){S.start=Date.now();S.timer=setInterval(updateStats,200)}
+  const exp=S.text[S.pos],pr=key.toLowerCase();S.total++;
+  const kEl=document.querySelector('.key[data-key="'+pr+'"]');if(kEl){kEl.classList.add('pressed');setTimeout(()=>kEl.classList.remove('pressed'),120)}
+  if(pr===exp){sound.correct();const chars=document.querySelectorAll('#textDisplay .char');if(chars[S.pos]){chars[S.pos].classList.remove('current','wrong');chars[S.pos].classList.add('done')}S.pos++;setMood('mascot','happy');
+    if(S.pos>=S.text.length){finishAbc();return}if(chars[S.pos])chars[S.pos].classList.add('current');highlight();updateProgress();
+  }else{sound.wrong();S.errors++;const chars=document.querySelectorAll('#textDisplay .char');if(chars[S.pos])chars[S.pos].classList.add('wrong');setMood('mascot','sad')}
+  updateStats();
 }
-
-// ============================================================
-//  ROCKET BULLET (improved)
-// ============================================================
-function drawRocket(b){
-  ctx.save();
-  const ang=Math.atan2(b.vy,b.vx);
-  ctx.translate(b.x,b.y);
-  ctx.rotate(ang);
-
-  // exhaust trail glow
-  const tg=ctx.createLinearGradient(-30,0,0,0);
-  tg.addColorStop(0,'rgba(255,100,0,0)');
-  tg.addColorStop(.4,'rgba(255,160,0,.4)');
-  tg.addColorStop(1,'rgba(255,220,50,.7)');
-  ctx.fillStyle=tg;
-  ctx.beginPath(); ctx.ellipse(-15,0,25,5,0,0,Math.PI*2); ctx.fill();
-
-  // body
-  ctx.fillStyle='#e0e0e0';
-  ctx.beginPath(); ctx.roundRect(-10,-3,22,6,3); ctx.fill();
-  // nose cone
-  ctx.fillStyle='#ff1744';
-  ctx.beginPath(); ctx.moveTo(12,-3); ctx.lineTo(20,0); ctx.lineTo(12,3); ctx.closePath(); ctx.fill();
-  // fins
-  ctx.fillStyle='#546e7a';
-  ctx.beginPath(); ctx.moveTo(-8,-3); ctx.lineTo(-14,-9); ctx.lineTo(-6,-3); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(-8,3); ctx.lineTo(-14,9); ctx.lineTo(-6,3); ctx.closePath(); ctx.fill();
-  // window
-  ctx.fillStyle='#00e5ff';
-  ctx.beginPath(); ctx.arc(4,0,3,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,.6)';
-  ctx.beginPath(); ctx.arc(3,-1,1.2,0,Math.PI*2); ctx.fill();
-  // flame
-  const ff=.8+Math.sin(frameCount*.5)*.2;
-  const fg=ctx.createRadialGradient(-10,0,0,-10,0,8*ff);
-  fg.addColorStop(0,'rgba(255,255,200,1)');
-  fg.addColorStop(.4,'rgba(255,150,0,.8)');
-  fg.addColorStop(1,'rgba(255,50,0,0)');
-  ctx.fillStyle=fg;
-  ctx.beginPath(); ctx.ellipse(-14,0,10*ff,4*ff,0,0,Math.PI*2); ctx.fill();
-
-  ctx.restore();
+function updateStats(){if(!S.start)return;const ms=Date.now()-S.start,min=ms/60000,sec=Math.floor(ms/1000);const wpm=min>0?Math.round((S.pos/5)/min):0;const acc=S.total>0?Math.round((S.pos/S.total)*100):100;document.getElementById('wpm').textContent=wpm;const a=document.getElementById('acc');a.textContent=acc+'%';a.classList.toggle('ok',acc>=90);a.classList.toggle('bad',acc<70);document.getElementById('time').textContent=sec+'s';document.getElementById('accLabel').textContent='Chính xác'}
+function updateProgress(){const p=(S.pos/S.text.length)*100;document.getElementById('progressFill').style.width=p+'%';document.getElementById('runner').style.left=p+'%'}
+function finishAbc(){
+  S.done=true;clearInterval(S.timer);updateStats();updateProgress();sound.win();
+  const wpm=parseInt(document.getElementById('wpm').textContent)||0,acc=parseInt(document.getElementById('acc').textContent)||0;
+  let stars='⭐',title='Bon cố lên nhé!';
+  if(acc>=90){stars='⭐⭐';title='Bon giỏi quá!'}
+  if(acc>=95&&wpm>=15){stars='⭐⭐⭐';title='Bon siêu cấp! 🌟'}
+  const summary='Tốc độ: <strong>'+wpm+'</strong> WPM<br>Chính xác: <strong>'+acc+'%</strong>';
+  showOverlay('🦉🎉',title,stars,summary,'Bay tiếp nào, Bon! 🚀',nextAbc);
+  setTimeout(()=>{const msgs={'⭐⭐⭐':['Chúc mừng Bon ba sao! Bon thật giỏi!','Tuyệt vời Bon ơi! Ba sao luôn!'],'⭐⭐':['Bon giỏi lắm! Hai sao rồi! Cố thêm nhé!'],'⭐':['Bon đã hoàn thành! Cố gắng thêm nhé!']};const a=msgs[stars]||msgs['⭐'];speech.say(a[Math.floor(Math.random()*a.length)])},800);
 }
+function resetAbc(){S.pos=0;S.errors=0;S.total=0;S.start=null;S.done=false;clearInterval(S.timer);speech.cancel();
+  document.getElementById('wpm').textContent='0';const a=document.getElementById('acc');a.textContent='100%';a.classList.add('ok');a.classList.remove('bad');
+  document.getElementById('time').textContent='0s';document.getElementById('accLabel').textContent='Chính xác';
+  hideOverlay();document.getElementById('capsWarn').classList.remove('show');renderText();highlight();updateProgress();updateBadge()}
+function nextAbc(){S.idx=(S.idx+1)%EX.length;S.text=EX[S.idx].x;resetAbc()}
+function updateBadge(){const ex=EX[S.idx],b=document.getElementById('exerciseBadge');b.textContent='';const s=document.createElement('strong');s.textContent='Bài '+(S.idx+1)+'/'+EX.length+': ';b.appendChild(s);b.appendChild(document.createTextNode(ex.t+' '));const c=document.createElement('span');c.className='new-keys';c.textContent=ex.k;b.appendChild(c)}
 
-// ============================================================
-//  PARTICLES
-// ============================================================
-const MAX_PARTICLES=100;
-function spawnExplosion(x,y,col){
-  // giới hạn particle pool — tránh lag khi nhiều nổ cùng lúc
-  const slots=Math.max(0,MAX_PARTICLES-particles.length);
-  const nSparks=Math.min(20,slots);
-  const nDebris=Math.min(5,Math.max(0,slots-nSparks));
-  for(let i=0;i<nSparks;i++){
-    const ang=Math.random()*Math.PI*2, spd=1.5+Math.random()*6;
-    particles.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,
-      r:2+Math.random()*6,alpha:1,
-      color:[col,'#ffd740','#ff6d00','#ffffff'][Math.floor(Math.random()*4)],
-      type:'spark'});
-  }
-  for(let i=0;i<nDebris;i++){
-    const ang=Math.random()*Math.PI*2, spd=1+Math.random()*3;
-    particles.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-1,
-      w:4+Math.random()*10,h:3+Math.random()*5,rot:Math.random()*Math.PI,
-      rotV:(Math.random()-.5)*.2,alpha:1,color:col,type:'debris'});
-  }
-  particles.push({type:'ring',x,y,r:5,maxR:80,alpha:.9,color:col});
-  screenShake=3;
-}
+// ===================== TAB 2: THƠ TIẾNG VIỆT =====================
+const poem={
+  list:[],  // [{id, title, text}]
+  current:null, // currently playing poem
+  pos:0,
+  correct:0,
+  total:0,
+  start:null,
+  timer:null,
+  done:false,
 
-function spawnMuzzleFlash(x,y){
-  if(particles.length>MAX_PARTICLES-5) return; // bỏ qua nếu pool đầy
-  for(let i=0;i<5;i++){
-    const ang=-Math.PI/2+(Math.random()-.5)*.8, spd=3+Math.random()*5;
-    particles.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,
-      r:2+Math.random()*4,alpha:1,color:'#ffd740',life:.2,type:'spark'});
-  }
-}
+  load(){try{this.list=JSON.parse(localStorage.getItem('bon-poems'))||[]}catch(e){this.list=[]}},
+  save(){localStorage.setItem('bon-poems',JSON.stringify(this.list))},
+  add(title,text){const id=Date.now().toString(36);this.list.push({id,title,text:text.trim()});this.save();this.renderList()},
+  remove(id){if(!confirm('Xóa bài thơ này?'))return;this.list=this.list.filter(p=>p.id!==id);this.save();this.renderList()},
 
-function spawnScorePopup(x,y,pts,col){
-  particles.push({type:'text',x,y:y-30,vy:-1.2,alpha:1,text:`+${pts}`,color:col||'#ffd740'});
-}
+  renderList(){
+    const el=document.getElementById('poemList');
+    if(this.list.length===0){el.innerHTML='<div class="poem-empty">📚 Chưa có bài thơ nào. Hãy thêm bài thơ đầu tiên cho Bon nhé!</div>';return}
+    el.innerHTML='<div class="poem-selector">'+this.list.map(p=>{
+      const preview=p.text.substring(0,50)+(p.text.length>50?'...':'');
+      return '<div class="poem-card" data-id="'+p.id+'"><h3>📖 '+this.esc(p.title)+'</h3><p>'+this.esc(preview)+'</p>'
+        +'<div class="poem-actions"><button class="btn primary" style="font-size:12px;padding:4px 12px" data-play="'+p.id+'">▶️ Gõ bài này</button>'
+        +'<button class="btn danger" style="font-size:12px;padding:4px 10px" data-del="'+p.id+'">🗑️</button></div></div>';
+    }).join('')+'</div>';
+    // Bind events
+    el.querySelectorAll('[data-play]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();this.startTyping(e.target.dataset.play)}));
+    el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();this.remove(e.target.dataset.del)}));
+  },
 
-// ============================================================
-//  BULLETS / ROCKETS
-// ============================================================
-function fireBullet(tx,ty,plane){
-  if(plane.dead) return; // prevent double fire
-  const gx=canvas.width/2, gy=canvas.height-60;
-  const dx=tx-gx, dy=ty-gy, dist=Math.sqrt(dx*dx+dy*dy);
-  const spd=22;
-  bullets.push({x:gx,y:gy-30,vx:(dx/dist)*spd,vy:(dy/dist)*spd,
-    targetX:tx,targetY:ty,plane,trail:[]});
-  spawnMuzzleFlash(gx,gy-38);
-  playShoot();
-}
+  esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML},
 
-// ============================================================
-//  RADAR
-// ============================================================
-function drawRadar(){
-  const W=110, cx=55, cy=55, R=48;
-  rCtx.clearRect(0,0,W,W);
-  // bg
-  rCtx.fillStyle='rgba(0,20,10,.85)';
-  rCtx.beginPath(); rCtx.arc(cx,cy,R,0,Math.PI*2); rCtx.fill();
-  // rings
-  [16,32,48].forEach(r=>{
-    rCtx.strokeStyle='rgba(0,255,100,.15)'; rCtx.lineWidth=1;
-    rCtx.beginPath(); rCtx.arc(cx,cy,r,0,Math.PI*2); rCtx.stroke();
-  });
-  // crosshairs
-  rCtx.strokeStyle='rgba(0,255,100,.2)'; rCtx.lineWidth=1;
-  rCtx.beginPath(); rCtx.moveTo(cx-R,cy); rCtx.lineTo(cx+R,cy); rCtx.stroke();
-  rCtx.beginPath(); rCtx.moveTo(cx,cy-R); rCtx.lineTo(cx,cy+R); rCtx.stroke();
-  // sweep
-  radarAngle=(radarAngle+.018)%(Math.PI*2); // chậm hơn, dễ nhìn
-  const sweep=rCtx.createConicalGradient?
-    null: // fallback below
-    null;
-  // draw sweep sector manually
-  rCtx.save();
-  rCtx.beginPath();
-  rCtx.moveTo(cx,cy);
-  rCtx.arc(cx,cy,R,radarAngle-Math.PI*.35,radarAngle);
-  rCtx.closePath();
-  const sweepG=rCtx.createRadialGradient(cx,cy,0,cx,cy,R);
-  sweepG.addColorStop(0,'rgba(0,255,100,.0)');
-  sweepG.addColorStop(1,'rgba(0,255,100,.18)');
-  rCtx.fillStyle=sweepG;
-  rCtx.fill();
-  rCtx.restore();
-  // sweep line
-  rCtx.strokeStyle='rgba(0,255,100,.8)'; rCtx.lineWidth=2;
-  rCtx.beginPath(); rCtx.moveTo(cx,cy);
-  rCtx.lineTo(cx+Math.cos(radarAngle)*R, cy+Math.sin(radarAngle)*R);
-  rCtx.stroke();
-  // blips for planes
-  planes.forEach(p=>{
-    const rx=(p.x/canvas.width)*2-1;
-    const ry=(p.y/canvas.height)*2-1;
-    const bx=cx+rx*R*.9, by=cy+ry*R*.9;
-    // angle of this blip from center
-    const blipAngle=Math.atan2(by-cy,bx-cx);
-    // normalise angle diff to [0, 2π)
-    let aDiff=(radarAngle-blipAngle)%(Math.PI*2);
-    if(aDiff<0) aDiff+=Math.PI*2;
-    // ping when sweep line just passed this blip (within small window)
-    if(aDiff<.12){
-      const dist01=Math.sqrt((bx-cx)**2+(by-cy)**2)/R;
-      playRadarPing(dist01, p);
-    }
-    rCtx.fillStyle='#ff4444';
-    rCtx.beginPath(); rCtx.arc(bx,by,4,0,Math.PI*2); rCtx.fill();
-    // blip glow
-    rCtx.fillStyle='rgba(255,80,80,.3)';
-    rCtx.beginPath(); rCtx.arc(bx,by,8,0,Math.PI*2); rCtx.fill();
-  });
-  // center dot
-  rCtx.fillStyle='#00ff64'; rCtx.beginPath(); rCtx.arc(cx,cy,4,0,Math.PI*2); rCtx.fill();
-  // border
-  rCtx.strokeStyle='rgba(0,255,100,.5)'; rCtx.lineWidth=2;
-  rCtx.beginPath(); rCtx.arc(cx,cy,R,0,Math.PI*2); rCtx.stroke();
-  // label
-  rCtx.fillStyle='rgba(0,255,100,.7)'; rCtx.font='bold 8px monospace';
-  rCtx.textAlign='center'; rCtx.fillText('RADAR',cx,W-4);
-}
+  startTyping(id){
+    const p=this.list.find(x=>x.id===id);if(!p)return;
+    this.current=p;
+    // Normalize: replace \n with special marker, trim
+    this.normalizedText=p.text.replace(/\r\n/g,'\n');
+    this.pos=0;this.correct=0;this.total=0;this.start=null;this.done=false;
+    clearInterval(this.timer);speech.cancel();
+    document.getElementById('poemManager').style.display='none';
+    document.getElementById('poemTyping').style.display='block';
+    document.getElementById('poemPlayTitle').textContent='📖 '+p.title;
+    document.getElementById('poemCharCount').textContent=this.normalizedText.length+' chữ';
+    // Reset stats display
+    document.getElementById('wpm').textContent='0';
+    const a=document.getElementById('acc');a.textContent='—';a.classList.remove('ok','bad');
+    document.getElementById('accLabel').textContent='Đúng';
+    document.getElementById('time').textContent='0s';
+    this.renderPoemText();this.updatePoemProgress();
+    // Focus hidden input
+    const inp=document.getElementById('poemInput');inp.value='';
+    setTimeout(()=>inp.focus(),100);
+  },
 
-// ============================================================
-//  GAME LOOP
-// ============================================================
-let gunAngle=0, gunTargetAngle=0;
-
-function gameLoop(){
-  if(!gameRunning) return;
-  frameCount++;
-
-  // timer
-  levelTimerFrac+=1/60;
-  const newSec=Math.max(0,Math.floor(custState.timePerLevel-levelTimerFrac));
-  if(newSec!==lastTimerSec){
-    lastTimerSec=newSec; levelTimer=newSec;
-    document.getElementById('hudTimer').textContent=newSec;
-    document.getElementById('hudTimer').style.color=
-      newSec<=5?'#ff1744':newSec<=10?'#ff9100':'#ff9100';
-    if(newSec<=5&&newSec>0&&!warnPlayed) playTimerWarn();
-    if(newSec<=5) warnPlayed=false;
-    if(newSec<=0){ timesUp(); return; }
-  }
-
-  // shake offset
-  let sx=0,sy=0;
-  if(screenShake>0){
-    sx=(Math.random()-.5)*Math.min(screenShake,3); sy=(Math.random()-.5)*Math.min(screenShake,3);
-    screenShake=Math.max(0,screenShake-2);
-  }
-
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.save(); ctx.translate(sx,sy);
-
-  // sky
-  const grad=ctx.createLinearGradient(0,0,0,canvas.height);
-  grad.addColorStop(0,'#030310'); grad.addColorStop(.5,'#080d30'); grad.addColorStop(1,'#0c1530');
-  ctx.fillStyle=grad; ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // stars
-  stars.forEach(s=>{
-    s.y+=s.speed; if(s.y>canvas.height){s.y=0;s.x=Math.random()*canvas.width;}
-    s.alpha=.35+Math.sin(s.twinkleOffset+frameCount*.03)*.35;
-    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,255,255,${s.alpha})`; ctx.fill();
-  });
-
-  // nebula: static, skip per-frame gradient for perf
-
-  // ground glow
-  const gg=ctx.createLinearGradient(0,canvas.height-80,0,canvas.height);
-  gg.addColorStop(0,'transparent'); gg.addColorStop(1,'rgba(0,80,180,.18)');
-  ctx.fillStyle=gg; ctx.fillRect(0,canvas.height-80,canvas.width,80);
-
-  // timer bar at top
-  const tPct=(custState.timePerLevel-levelTimerFrac)/custState.timePerLevel;
-  const tbCol=tPct>.5?`rgba(105,255,71,.7)`:tPct>.25?`rgba(255,145,0,.7)`:`rgba(255,23,68,.8)`;
-  ctx.fillStyle='rgba(255,255,255,.07)'; ctx.fillRect(0,58,canvas.width,4);
-  ctx.fillStyle=tbCol; ctx.fillRect(0,58,canvas.width*Math.max(0,tPct),4);
-
-  const cfg=getLevelCfg(level);
-
-  // spawn
-  spawnTimer++; if(spawnTimer>=cfg.spawnInterval&&planes.length<cfg.maxPlanes){spawnTimer=0;spawnPlane();}
-
-  // combo decay
-  if(comboTimer>0){comboTimer--;if(comboTimer===0)combo=1;}
-
-  // auto-target: closest to crossing
-  if(!targetPlane||!planes.includes(targetPlane)){
-    targetPlane=planes.length>0?planes.reduce((a,b)=>{
-      const ax=a.vx>0?a.x:canvas.width-a.x;
-      const bx=b.vx>0?b.x:canvas.width-b.x;
-      return ax>bx?a:b;
-    }):null;
-    document.getElementById('typingInput').value='';
-  }
-
-  // gun angle toward target
-  if(targetPlane){
-    const dx=targetPlane.x-canvas.width/2, dy=targetPlane.y-(canvas.height-60);
-    gunTargetAngle=Math.atan2(dy,dx)+Math.PI/2;
-  }
-  gunAngle+=(gunTargetAngle-gunAngle)*.12;
-
-  // update + draw planes (body only — labels drawn after shake layer ends)
-  const wordLabels=[];
-  let pendingGameOver=false;
-  planes=planes.filter(p=>{
-    p.x+=p.vx;
-    const crossed=(p.vx>0&&p.x>canvas.width+120)||(p.vx<0&&p.x<-120);
-    if(crossed){
-      hp=Math.max(0,hp-20); playMiss();
-      if(hp<=0){ pendingGameOver=true; return false; }
-      return false;
-    }
-    drawPlane(p.x,p.y,p.scale,p.colorIdx,p.vx<0,false);
-    wordLabels.push({p, isTarget:p===targetPlane});
-    return true;
-  });
-  if(pendingGameOver){ endGame(); return; }
-
-  // bullets (rockets)
-  const hitsThisFrame=[];
-  bullets=bullets.filter(b=>{
-    b.x+=b.vx; b.y+=b.vy;
-    // homing: steer toward target plane position
-    if(b.plane&&!b.plane.dead){
-      const tx=b.plane.x, ty=b.plane.y;
-      const dx=tx-b.x, dy=ty-b.y, dist=Math.sqrt(dx*dx+dy*dy);
-      if(dist>4){
-        const desVx=(dx/dist)*18, desVy=(dy/dist)*18;
-        b.vx+=(desVx-b.vx)*.18; b.vy+=(desVy-b.vy)*.18;
+  renderPoemText(){
+    const el=document.getElementById('poemDisplay');el.innerHTML='';
+    const t=this.normalizedText;
+    for(let i=0;i<t.length;i++){
+      const sp=document.createElement('span');sp.className='char';
+      if(t[i]==='\n'){sp.classList.add('newline');sp.innerHTML='↵<br>'}
+      else if(t[i]===' '){sp.classList.add('space');sp.innerHTML='&nbsp;'}
+      else sp.textContent=t[i];
+      if(i<this.pos){
+        // Check if was correct
+        sp.classList.add(this._charResults[i]?'done':'wrong');
       }
-      if(dist<28&&!b.plane.dead){
-        b.plane.dead=true;
-        hitsThisFrame.push(b.plane);
-        return false; // remove bullet
+      if(i===this.pos)sp.classList.add('current');
+      el.appendChild(sp);
+    }
+  },
+
+  _charResults:[], // true=correct, false=wrong for each position
+
+  onInput(e){
+    if(this.done)return;
+    const inp=document.getElementById('poemInput');
+    const val=inp.value;
+    const t=this.normalizedText;
+
+    // Start timer on first input
+    if(this.start===null&&val.length>0){this.start=Date.now();this.timer=setInterval(()=>this.updatePoemStats(),200)}
+
+    // Handle: compare current input length with position
+    // If input grew → new char typed
+    // If input shrunk → backspace (allow corrections!)
+    const newLen=val.length;
+
+    if(newLen>this.pos){
+      // New characters typed
+      for(let i=this.pos;i<newLen&&i<t.length;i++){
+        const expected=t[i];
+        const typed=val[i];
+        // For newline: user presses Enter → textarea gets \n
+        const isCorrect=(typed===expected);
+        this._charResults[i]=isCorrect;
+        if(isCorrect){this.correct++;sound.correct();setMood('mascotPoemPlay','happy')}
+        else{setMood('mascotPoemPlay','sad')}// No error sound for poems - gentle!
+        this.total++;
       }
+      this.pos=Math.min(newLen,t.length);
+    }else if(newLen<this.pos){
+      // Backspace - allow corrections
+      // Undo results for deleted chars
+      for(let i=newLen;i<this.pos;i++){
+        if(this._charResults[i]===true)this.correct--;
+        if(this._charResults[i]!==undefined)this.total--;
+        delete this._charResults[i];
+      }
+      this.pos=newLen;
     }
-    drawRocket(b);
-    return b.y>-50&&b.x>-100&&b.x<canvas.width+100;
-  });
 
-  // process hits OUTSIDE filter to avoid race condition
-  hitsThisFrame.forEach(plane=>{
-    const px=plane.x, py=plane.y;
-    const pts=plane.word.length*10*combo;
-    spawnExplosion(px,py,PLANE_COLORS[plane.colorIdx].body);
-    spawnScorePopup(px,py,pts);
-    playExplosion();
-    score+=pts; kills++; killsForLevel++;
-    combo=Math.min(combo+1,10); comboTimer=200;
-    totalWordsTyped++;
-    // đọc từ tiếng Anh ngay khi bắn trúng — vào hàng đợi, không loạn
-    speakEN(plane.word.toLowerCase());
-  });
-  if(hitsThisFrame.length>0){
-    planes=planes.filter(p=>!p.dead);
-    if(killsForLevel>=KILLS_TO_LEVEL){killsForLevel=0;pendingLevelUp=true;}
+    // Update display
+    this.renderPoemText();
+    this.updatePoemProgress();
+    this.updatePoemStats();
+
+    // Update bubble with encouragement
+    this.updateBubble();
+
+    // Check completion
+    if(this.pos>=t.length){this.finishPoem()}
+  },
+
+  updateBubble(){
+    const bub=document.getElementById('bubblePoemPlay');
+    const pct=this.total>0?Math.round((this.correct/this.total)*100):100;
+    const pos=this.pos,len=this.normalizedText.length;
+    if(pos<len*0.25)bub.innerHTML='Bon bắt đầu tốt lắm! Cố gắng nhé! 💪';
+    else if(pos<len*0.5)bub.innerHTML='Bon đang làm rất tốt! Đã được '+Math.round(pos/len*100)+'% rồi! 🌟';
+    else if(pos<len*0.75)bub.innerHTML='Quá nửa rồi Bon ơi! Sắp xong rồi! 🚀';
+    else if(pos<len)bub.innerHTML='Gần xong lắm rồi! Bon cố lên nào! ✨';
+  },
+
+  updatePoemStats(){
+    if(!this.start)return;
+    const ms=Date.now()-this.start,sec=Math.floor(ms/1000);
+    const min=ms/60000;
+    const wpm=min>0?Math.round((this.correct/5)/min):0;
+    document.getElementById('wpm').textContent=wpm;
+    // Gentle display: show correct count instead of accuracy %
+    const a=document.getElementById('acc');
+    a.textContent=this.correct+'/'+this.pos;
+    a.classList.add('ok');a.classList.remove('bad');
+    document.getElementById('time').textContent=sec+'s';
+  },
+
+  updatePoemProgress(){
+    const p=this.normalizedText.length>0?(this.pos/this.normalizedText.length)*100:0;
+    document.getElementById('poemProgressFill').style.width=p+'%';
+    document.getElementById('poemRunner').style.left=p+'%';
+  },
+
+  finishPoem(){
+    this.done=true;clearInterval(this.timer);
+    this.updatePoemStats();this.updatePoemProgress();sound.win();
+
+    const total=this.normalizedText.length;
+    const correct=this.correct;
+    const pct=Math.round((correct/total)*100);
+    const wpm=parseInt(document.getElementById('wpm').textContent)||0;
+
+    // Gentle scoring: always at least 1 star, focus on positivity
+    let stars='⭐',title='Bon đã hoàn thành! 🎉',emoji='🦉🎉';
+    if(pct>=80){stars='⭐⭐';title='Bon giỏi quá! 🎉';emoji='🦉🌟'}
+    if(pct>=95){stars='⭐⭐⭐';title='Bon siêu cấp! 🎉';emoji='🦉👑'}
+
+    // Gentle summary: emphasize correct, not errors
+    const summary='Bon đã gõ đúng <strong>'+correct+'/'+total+'</strong> chữ!<br>Tốc độ: <strong>'+wpm+'</strong> WPM';
+
+    const self=this;
+    showOverlay(emoji,title,stars,summary,'Gõ lại bài này 🔄',()=>self.startTyping(self.current.id));
+
+    // Voice congratulation - always positive!
+    setTimeout(()=>{
+      const msgs=pct>=95
+        ?['Chúc mừng Bon! Bon gõ đúng hầu hết chữ! Giỏi quá!','Bon siêu cấp! Gõ đúng gần hết luôn!']
+        :pct>=80
+        ?['Bon giỏi lắm! Gõ đúng nhiều chữ rồi! Cố thêm nhé!','Bon làm tốt lắm! Mỗi lần sẽ giỏi hơn!']
+        :['Bon đã hoàn thành bài thơ rồi! Tuyệt lắm! Lần sau sẽ giỏi hơn nữa!','Cố lên Bon ơi! Bon đã rất cố gắng!'];
+      speech.say(msgs[Math.floor(Math.random()*msgs.length)]);
+    },800);
+  },
+
+  backToList(){
+    clearInterval(this.timer);speech.cancel();
+    document.getElementById('poemTyping').style.display='none';
+    document.getElementById('poemManager').style.display='block';
+    hideOverlay();
+    // Reset stats
+    document.getElementById('wpm').textContent='0';
+    document.getElementById('acc').textContent='100%';
+    document.getElementById('accLabel').textContent='Chính xác';
+    document.getElementById('time').textContent='0s';
+  },
+
+  resetPoem(){
+    if(!this.current)return;
+    hideOverlay();
+    this._charResults=[];
+    this.startTyping(this.current.id);
   }
+};
 
-  // particles
-  particles=particles.filter(p=>{
-    if(p.type==='ring'){
-      p.r+=5; p.alpha-=.04;
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.strokeStyle=`rgba(255,200,0,${p.alpha})`; ctx.lineWidth=3; ctx.stroke();
-      return p.alpha>0&&p.r<p.maxR;
-    }
-    if(p.type==='debris'){
-      p.x+=p.vx; p.y+=p.vy; p.vy+=.2; p.rot+=p.rotV; p.alpha-=.025;
-      ctx.save(); ctx.globalAlpha=p.alpha; ctx.translate(p.x,p.y); ctx.rotate(p.rot);
-      ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
-      return p.alpha>0;
-    }
-    if(p.type==='text'){
-      p.y+=p.vy; p.alpha-=.022;
-      ctx.save(); ctx.globalAlpha=p.alpha;
-      ctx.font='bold 20px Bangers'; ctx.fillStyle=p.color;
-      ctx.textAlign='center'; ctx.fillText(p.text,p.x,p.y); ctx.restore();
-      return p.alpha>0;
-    }
-    // spark
-    p.x+=p.vx; p.y+=p.vy; p.vy+=.12; p.alpha-=.028; p.r*=.97;
-    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle=p.color+Math.floor(p.alpha*255).toString(16).padStart(2,'0');
-    ctx.globalAlpha=p.alpha; ctx.fill(); ctx.globalAlpha=1;
-    return p.alpha>0&&p.r>.4;
-  });
-
-  // gun
-  drawGun(canvas.width/2,canvas.height-46,gunAngle);
-
-  ctx.restore();// end screen shake — everything below is shake-free
-
-  // word labels — drawn OUTSIDE shake layer so text stays perfectly still
-  ctx.font='bold 15px Nunito';
-  wordLabels.forEach(({p,isTarget})=>{
-    const wordW=p.word.length*13+24;
-    const bubbleY=p.y-56*p.scale;
-    // background pill
-    ctx.fillStyle='rgba(0,0,0,.82)';
-    ctx.beginPath(); ctx.roundRect(p.x-wordW/2,bubbleY-2,wordW,30,8); ctx.fill();
-    // neon border on targeted
-    if(isTarget){
-      ctx.save();
-      ctx.strokeStyle=custState.themeColor;
-      ctx.lineWidth=2.5;
-      ctx.globalAlpha=.75+Math.sin(frameCount*.18)*.25;
-      ctx.beginPath(); ctx.roundRect(p.x-wordW/2-3,bubbleY-4,wordW+6,34,9); ctx.stroke();
-      ctx.restore();
-      // dashed guide line — also shake-free
-      ctx.save();
-      ctx.strokeStyle='rgba(0,229,255,.12)'; ctx.lineWidth=1;
-      ctx.setLineDash([5,9]);
-      ctx.beginPath(); ctx.moveTo(canvas.width/2,canvas.height-80); ctx.lineTo(p.x,p.y); ctx.stroke();
-      ctx.setLineDash([]); ctx.restore();
-    }
-    // typed (green) + remaining (white/theme)
-    const typed=p.typed||'', untyped=p.word.slice(typed.length);
-    const tw=ctx.measureText(typed).width;
-    const tx0=p.x-wordW/2+12;
-    ctx.fillStyle='#69ff47'; ctx.fillText(typed,tx0,bubbleY+20);
-    ctx.fillStyle=isTarget?custState.themeColor:'rgba(255,255,255,.88)';
-    ctx.fillText(untyped,tx0+tw,bubbleY+20);
-  });
-
-  // radar
-  drawRadar();
-
-  updateHUD();
-  // xử lý levelUp SAU khi frame hoàn toàn xong — tránh re-entrancy
-  if(pendingLevelUp){pendingLevelUp=false;levelUp();}
-  requestAnimationFrame(gameLoop);
-}
-
-// ============================================================
-//  TIMER UP → fail if not enough kills
-// ============================================================
-function timesUp(){
-  // if player killed enough to pass this level, advance
-  if(killsForLevel>=Math.floor(KILLS_TO_LEVEL*.6)){
-    killsForLevel=0; pendingLevelUp=true;
-  } else {
-    // lose hp, reset timer
-    hp=Math.max(0,hp-25);
-    playMiss();
-    if(hp<=0){endGame();return;}
-    // restart timer, warn player
-    levelTimerFrac=0; lastTimerSec=custState.timePerLevel;
-    warnPlayed=false;
-    speak(`${playerName}! Chậm quá rồi! Cố lên nào!`);
-  }
-}
-
-// ============================================================
-//  HUD
-// ============================================================
-function updateHUD(){
-  document.getElementById('hudScore').textContent=score.toLocaleString();
-  document.getElementById('hudLevel').textContent=level;
-  document.getElementById('hudCombo').textContent=`x${combo}`;
-  document.getElementById('hpBar').style.width=hp+'%';
-  document.getElementById('hpBar').style.background=
-    hp>60?'linear-gradient(90deg,#00e676,#69ff47)':
-    hp>30?'linear-gradient(90deg,#ffd600,#ff9100)':
-          'linear-gradient(90deg,#ff1744,#ff6d00)';
-}
-
-// ============================================================
-//  SPAWN PLANE
-// ============================================================
-function getRandomWord(tier){
-  const pool=[];
-  for(let t=1;t<=tier;t++) pool.push(...WORDS[t]);
-  const used=planes.map(p=>p.word);
-  const avail=pool.filter(w=>!used.includes(w));
-  const src=avail.length>0?avail:pool;
-  return src[Math.floor(Math.random()*src.length)].toUpperCase();
-}
-
-function spawnPlane(){
-  const cfg=getLevelCfg(level);
-  const word=getRandomWord(cfg.wordTier);
-  const fromLeft=Math.random()>.5;
-  const y=80+Math.random()*(canvas.height*.5);
-  const spd=cfg.speed*(0.85+Math.random()*.3);
-  const vx=fromLeft?spd:-spd;
-  const x=fromLeft?-90:canvas.width+90;
-  planes.push({x,y,vx,word,typed:'',colorIdx:Math.floor(Math.random()*PLANE_COLORS.length),
-    scale:.8+Math.random()*.28,hp:1,shake:0,dead:false,id:Date.now()+Math.random()});
-}
-
-// ============================================================
-//  TYPING
-// ============================================================
-document.getElementById('typingInput').addEventListener('input',function(){
-  if(!gameRunning) return;
-  const val=this.value.toUpperCase().trim();
-  if(!targetPlane){this.value='';return;}
-  let matched=null;
-  for(const p of planes){if(!p.dead&&p.word.startsWith(val)&&val.length>0){matched=p;break;}}
-  if(matched){
-    targetPlane=matched; targetPlane.typed=val;
-    if(val===matched.word){
-      // fire rocket — homing hit detection in game loop
-      const px=matched.x,py=matched.y;
-      fireBullet(px,py,matched);
-      this.value=''; targetPlane=null;
-    }
-  } else {
-    this.classList.add('wrong');
-    setTimeout(()=>this.classList.remove('wrong'),200);
-    combo=1; comboTimer=0;
-    if(targetPlane) targetPlane.typed='';
-    this.value='';
-  }
+// Poem form
+document.getElementById('addPoemBtn').addEventListener('click',()=>{
+  document.getElementById('poemForm').classList.toggle('show');
+  document.getElementById('poemTitle').value='';
+  document.getElementById('poemText').value='';
+  document.getElementById('poemTitle').focus();
 });
-
-// ============================================================
-//  LEVEL UP
-// ============================================================
-function levelUp(){
-  level++;
-  playLevelUp(); stopBGM();
-  levelTimerFrac=0; lastTimerSec=custState.timePerLevel; warnPlayed=false;
-  document.getElementById('hudTimer').textContent=custState.timePerLevel;
-  const ov=document.getElementById('levelUpOverlay');
-  document.getElementById('luText').textContent=`MÀN ${level}!`;
-  document.getElementById('luSub').textContent=custState.cheerMsg||'Tiếp tục nào!';
-  ov.classList.add('show');
-  setTimeout(()=>ov.classList.remove('show'),2000);
-  speak(`${custState.cheerMsg} ${playerName}! Màn ${level}!`);
-  // speed bonus score
-  score+=level*50;
-  spawnScorePopup(canvas.width/2,canvas.height/2,level*50,'#69ff47');
-}
-
-// ============================================================
-//  BADGES
-// ============================================================
-function getBadge(k,s){
-  if(k>=30)  return'🏆 ĐẠI TƯỚNG KHÔNG QUÂN';
-  if(k>=20)  return'🥇 XẠ THỦ XUẤT SẮC';
-  if(k>=12)  return'🥈 PHI CÔNG GIỎI';
-  if(k>=6)   return'🥉 LÍNH MỚI ĐÁNG GỜM';
-  return '⭐ ĐANG LUYỆN TẬP';
-}
-
-// ============================================================
-//  START / END
-// ============================================================
-function startGame(){
-  ensureAudio();
-  score=0; level=custState.startLevel||1; hp=100; combo=1; comboTimer=0;
-  kills=0; killsForLevel=0; planes=[]; bullets=[]; particles=[];
-  frameCount=0; spawnTimer=0; targetPlane=null; gunAngle=0; gunTargetAngle=0;
-  levelTimerFrac=0; lastTimerSec=custState.timePerLevel; warnPlayed=false;
-  levelTimer=custState.timePerLevel; totalWordsTyped=0; gameStartTime=Date.now();
-  gameRunning=true; pendingLevelUp=false; pendingLevelUp=false;
-
-  document.getElementById('hudTimer').textContent=custState.timePerLevel;
-  generateStars();
-  document.getElementById('introScreen').style.display='none';
-  document.getElementById('customizeScreen').style.display='none';
-  document.getElementById('gameOverScreen').style.display='none';
-  document.getElementById('hud').style.display='flex';
-  document.getElementById('inputBar').style.display='flex';
-  document.getElementById('radarCanvas').style.display='block';
-  document.getElementById('volBtn').style.display='block';
-  document.getElementById('custBtn').style.display='block';
-  document.getElementById('hudName').textContent=playerName.toUpperCase().slice(0,10);
-
-  // apply theme color to input
-  document.getElementById('typingInput').style.borderColor=custState.themeColor;
-  document.getElementById('typingInput').style.color=custState.themeColor;
-  document.getElementById('typingInput').focus();
-
-  speak(`Xin chào ${playerName}! Sẵn sàng chiến đấu chưa? Cẩn thận nhé, mỗi màn chỉ có ${custState.timePerLevel} giây thôi!`);
-  requestAnimationFrame(gameLoop);
-}
-
-function endGame(){
-  gameRunning=false; stopBGM();
-  if(score>highScore){highScore=score;localStorage.setItem('skytyper_hs',highScore);}
-  const elapsed=(Date.now()-gameStartTime)/60000;
-  const wpm=elapsed>0?Math.round(totalWordsTyped/elapsed):0;
-  document.getElementById('gameOverScreen').style.display='flex';
-  document.getElementById('goName').textContent=`✈️ ${playerName.toUpperCase()} ✈️`;
-  document.getElementById('goScore').textContent=score.toLocaleString();
-  document.getElementById('goLevel').textContent=level;
-  document.getElementById('goKills').textContent=kills;
-  document.getElementById('goWpm').textContent=wpm;
-  document.getElementById('goHigh').textContent=highScore.toLocaleString();
-  document.getElementById('goBadge').textContent=getBadge(kills,score);
-  const isNewHigh=score>=highScore;
-  const msg=isNewHigh
-    ?`Ôi trời ơi ${playerName}! Kỷ lục mới! ${score} điểm! Bạn thật xuất sắc! ${getBadge(kills,score)}!`
-    :`Trò chơi kết thúc rồi ${playerName}! Bạn đạt ${score} điểm! Bắn hạ ${kills} máy bay! Hãy thử lại để phá kỷ lục nhé!`;
-  setTimeout(()=>speak(msg),600);
-}
-
-// ============================================================
-//  BUTTONS
-// ============================================================
-document.getElementById('btnStart').addEventListener('click',()=>{
-  const nm=document.getElementById('playerName').value.trim();
-  playerName=nm||'Bạn ơi'; startGame();
+document.getElementById('cancelPoemBtn').addEventListener('click',()=>document.getElementById('poemForm').classList.remove('show'));
+document.getElementById('savePoemBtn').addEventListener('click',()=>{
+  const t=document.getElementById('poemTitle').value.trim();
+  const x=document.getElementById('poemText').value;
+  if(!t){alert('Hãy nhập tên bài thơ nhé!');return}
+  if(!x.trim()){alert('Hãy nhập nội dung bài thơ nhé!');return}
+  poem.add(t,x);
+  document.getElementById('poemForm').classList.remove('show');
 });
-document.getElementById('playerName').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btnStart').click();});
-document.getElementById('btnGoCustomize').addEventListener('click',()=>{
-  document.getElementById('introScreen').style.display='none';
-  document.getElementById('customizeScreen').style.display='flex';
-});
-document.getElementById('btnBackToIntro').addEventListener('click',()=>{
-  document.getElementById('customizeScreen').style.display='none';
-  document.getElementById('introScreen').style.display='flex';
-});
-document.getElementById('btnSaveCustomize').addEventListener('click',()=>{
-  custState.gameTitle=document.getElementById('custGameTitle').value.trim()||'SKY TYPER';
-  custState.timePerLevel=parseInt(document.getElementById('custTime').value)||45;
-  custState.startLevel=parseInt(document.getElementById('custDiff').value)||1;
-  custState.cheerMsg=document.getElementById('custCheer').value.trim()||'Tuyệt vời!';
-  document.querySelector('.intro-title').textContent='🚀 '+custState.gameTitle;
-  const nm=document.getElementById('playerName').value.trim();
-  playerName=nm||'Bạn ơi';
-  document.getElementById('customizeScreen').style.display='none';
-  startGame();
-});
-document.getElementById('btnRetry').addEventListener('click',()=>{
-  document.getElementById('gameOverScreen').style.display='none';
-  document.getElementById('hud').style.display='none';
-  document.getElementById('inputBar').style.display='none';
-  document.getElementById('radarCanvas').style.display='none';
-  document.getElementById('volBtn').style.display='none';
-  document.getElementById('custBtn').style.display='none';
-  document.getElementById('introScreen').style.display='flex';
-});
-document.getElementById('btnRetryCustomize').addEventListener('click',()=>{
-  document.getElementById('gameOverScreen').style.display='none';
-  document.getElementById('hud').style.display='none';
-  document.getElementById('inputBar').style.display='none';
-  document.getElementById('radarCanvas').style.display='none';
-  document.getElementById('volBtn').style.display='none';
-  document.getElementById('custBtn').style.display='none';
-  document.getElementById('customizeScreen').style.display='flex';
-});
-document.getElementById('volBtn').addEventListener('click',()=>{
-  muted=!muted;
-  document.getElementById('volBtn').textContent=muted?'🔇':'🔊';
-  if(muted){stopBGM();window.speechSynthesis?.cancel();enQueue.length=0;enSpeaking=false;}
-});
-document.getElementById('custBtn').addEventListener('click',()=>{
-  if(!gameRunning) return;
-  gameRunning=false; stopBGM();
-  document.getElementById('hud').style.display='none';
-  document.getElementById('inputBar').style.display='none';
-  document.getElementById('radarCanvas').style.display='none';
-  document.getElementById('volBtn').style.display='none';
-  document.getElementById('custBtn').style.display='none';
-  document.getElementById('customizeScreen').style.display='flex';
-});
+document.getElementById('poemBackBtn').addEventListener('click',()=>poem.backToList());
+document.getElementById('poemResetBtn').addEventListener('click',()=>poem.resetPoem());
 
-// Color picker
-document.getElementById('colorPicker').addEventListener('click',e=>{
-  const dot=e.target.closest('.color-dot');
-  if(!dot) return;
-  document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('sel'));
-  dot.classList.add('sel');
-  custState.themeColor=dot.dataset.col;
+// Hidden textarea input handler
+document.getElementById('poemInput').addEventListener('input',e=>poem.onInput(e));
+// Keep focus on hidden input when clicking poem display
+document.getElementById('poemDisplay').addEventListener('click',()=>{
+  if(!poem.done)document.getElementById('poemInput').focus();
 });
-// Live preview title
-document.getElementById('custGameTitle').addEventListener('input',function(){
-  document.getElementById('prevTitle').textContent=this.value||'SKY TYPER';
-});
-
-// ============================================================
-//  BUILD INTRO
-// ============================================================
-(function buildIntro(){
-  [document.getElementById('starsBg'),document.getElementById('starsBg2')].forEach(sb=>{
-    if(!sb) return;
-    for(let i=0;i<90;i++){
-      const s=document.createElement('div'); s.className='star';
-      const sz=Math.random()*2.5+.5;
-      s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;
-        animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s;`;
-      sb.appendChild(s);
+// Re-focus when tab becomes active
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    if(tab.dataset.tab==='poem'&&poem.current&&!poem.done){
+      setTimeout(()=>document.getElementById('poemInput').focus(),100);
     }
   });
-  const pp=document.getElementById('planePare');
-  const cols=['#e53935','#1e88e5','#43a047','#fb8c00','#8e24aa'];
-  cols.forEach(col=>{
-    const c=document.createElement('canvas'); c.width=80; c.height=60;
-    const cx=c.getContext('2d');
-    cx.fillStyle=col; cx.beginPath(); cx.roundRect(10,20,50,20,5); cx.fill();
-    cx.fillStyle='rgba(0,0,0,.3)';
-    cx.beginPath(); cx.moveTo(24,20); cx.lineTo(34,4); cx.lineTo(40,20); cx.closePath(); cx.fill();
-    cx.beginPath(); cx.moveTo(24,40); cx.lineTo(34,56); cx.lineTo(40,40); cx.closePath(); cx.fill();
-    cx.fillStyle='#80cbc4'; cx.beginPath(); cx.roundRect(30,22,18,16,3); cx.fill();
-    cx.fillStyle='#ffd740';
-    cx.beginPath(); cx.moveTo(60,20); cx.lineTo(73,30); cx.lineTo(60,40); cx.closePath(); cx.fill();
-    cx.fillStyle='rgba(255,100,0,.7)';
-    cx.beginPath(); cx.ellipse(5,30,8,4,0,0,Math.PI*2); cx.fill();
-    pp.appendChild(c);
-  });
-})();
-
-// Tap bất kỳ đâu trên canvas → refocus input (bàn phím vật lý vẫn cần focus)
-document.getElementById('gameCanvas').addEventListener('pointerdown', ()=>{
-  if(gameRunning){
-    const inp = document.getElementById('typingInput');
-    if(document.activeElement !== inp) inp.focus();
-  }
 });
 
-window.addEventListener('keydown',e=>{if(e.key===' '&&gameRunning)e.preventDefault();});
+// ===================== INIT =====================
+renderKB();renderText();highlight();updateProgress();updateBadge();
+sound.load();speech.load();poem.load();poem.renderList();
+
+if(('ontouchstart' in window||navigator.maxTouchPoints>0)&&localStorage.getItem('bon-tip-x')!=='1')
+  document.getElementById('tabletTip').style.display='flex';
+if(window.speechSynthesis){speech.init();speechSynthesis.onvoiceschanged=()=>speech.init()}
+
+document.addEventListener('keydown',e=>{
+  // Only handle ABC tab keys
+  if(document.getElementById('tabAbc').classList.contains('active')){sound.init();onKey(e)}
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{sound.init();resetAbc()});
+document.getElementById('nextBtn').addEventListener('click',()=>{sound.init();nextAbc()});
+document.getElementById('soundBtn').addEventListener('click',()=>{sound.init();sound.toggle()});
+document.getElementById('tipClose').addEventListener('click',()=>{document.getElementById('tabletTip').style.display='none';localStorage.setItem('bon-tip-x','1')});
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+
 </script>
 </body>
 </html>
