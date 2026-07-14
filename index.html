@@ -31,6 +31,14 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .sound-btn{background:#fff;border:none;border-radius:14px;padding:6px 10px;font-size:20px;cursor:pointer;box-shadow:0 3px 0 var(--line)}
 .sound-btn:active{transform:translateY(2px)}.sound-btn.muted{opacity:.5}
 
+/* Chip phần thưởng */
+.reward-chip{background:#fff;border:2px solid var(--line);border-radius:14px;padding:5px 10px;cursor:default;box-shadow:0 3px 0 var(--line);display:flex;align-items:center;gap:4px;font-family:inherit;transition:all .2s}
+.reward-chip .rw-icon{font-size:16px}
+.reward-chip .rw-stars{font-size:13px;letter-spacing:1px}
+.reward-chip.ready{background:linear-gradient(135deg,#a55eea,#8854d0);border-color:#8854d0;cursor:pointer;animation:rwPulse 1.2s ease-in-out infinite;box-shadow:0 3px 0 #6a3fa8}
+.reward-chip.ready .rw-stars{filter:brightness(1.3)}
+@keyframes rwPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+
 /* TABS */
 .tabs{display:flex;gap:6px;margin-bottom:10px}
 .tab{flex:1;text-align:center;padding:10px 16px;background:#fff;border-radius:16px 16px 0 0;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 -2px 0 var(--line) inset;opacity:.6;transition:all .2s;border:none;font-family:inherit;color:var(--ink)}
@@ -199,6 +207,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
       <div class="stat"><div class="stat-label">Tốc độ</div><div class="stat-value" id="wpm">0</div></div>
       <div class="stat"><div class="stat-label" id="accLabel">Chính xác</div><div class="stat-value ok" id="acc">100%</div></div>
       <div class="stat"><div class="stat-label">Thời gian</div><div class="stat-value" id="time">0s</div></div>
+      <button class="reward-chip" id="rewardChip" title="Phần thưởng"></button>
       <button class="sound-btn" id="soundBtn" title="Bật/tắt âm thanh">🔊</button>
     </div>
   </header>
@@ -475,7 +484,16 @@ function finishAbc(){
   if(acc>=90){stars='⭐⭐';title='Bon giỏi quá!'}
   if(acc>=95&&wpm>=15){stars='⭐⭐⭐';title='Bon siêu cấp! 🌟'}
   const summary='Tốc độ: <strong>'+wpm+'</strong> WPM<br>Chính xác: <strong>'+acc+'%</strong>';
-  showOverlay('🦉🎉',title,stars,summary,'Bay tiếp nào, Bon! 🚀',nextAbc);
+
+  // Phần thưởng dùng chung
+  if(REWARD.check(acc)){REWARD.showUnlock(summary);return}
+
+  const have=REWARD.get(),need=REWARD.NEED-have;
+  let bonus='';
+  if(acc>=REWARD.THRESHOLD)bonus='<br><br><span style="color:#a55eea;font-weight:700">🌟 Xuất sắc! +1 sao thưởng!<br>Còn '+need+' lần nữa được chơi Word Blast! 🎮</span>';
+  else bonus='<br><br><span style="color:var(--ink-soft);font-size:13px">🎁 Gõ đúng ≥'+REWARD.THRESHOLD+'% để có sao thưởng ('+have+'/'+REWARD.NEED+')</span>';
+
+  showOverlay('🦉🎉',title,stars,summary+bonus,'Bay tiếp nào, Bon! 🚀',nextAbc);
   setTimeout(()=>{const msgs={'⭐⭐⭐':['Chúc mừng Bon ba sao! Bon thật giỏi!','Tuyệt vời Bon ơi! Ba sao luôn!'],'⭐⭐':['Bon giỏi lắm! Hai sao rồi! Cố thêm nhé!'],'⭐':['Bon đã hoàn thành! Cố gắng thêm nhé!']};const a=msgs[stars]||msgs['⭐'];speech.say(a[Math.floor(Math.random()*a.length)])},800);
 }
 function resetAbc(){S.pos=0;S.errors=0;S.total=0;S.start=null;S.done=false;clearInterval(S.timer);speech.cancel();
@@ -484,6 +502,51 @@ function resetAbc(){S.pos=0;S.errors=0;S.total=0;S.start=null;S.done=false;clear
   hideOverlay();document.getElementById('capsWarn').classList.remove('show');renderText();highlight();updateProgress();updateBadge()}
 function nextAbc(){S.idx=(S.idx+1)%EX.length;S.text=EX[S.idx].x;resetAbc()}
 function updateBadge(){const ex=EX[S.idx],b=document.getElementById('exerciseBadge');b.textContent='';const s=document.createElement('strong');s.textContent='Bài '+(S.idx+1)+'/'+EX.length+': ';b.appendChild(s);b.appendChild(document.createTextNode(ex.t+' '));const c=document.createElement('span');c.className='new-keys';c.textContent=ex.k;b.appendChild(c)}
+
+// ===================== HỆ THỐNG PHẦN THƯỞNG =====================
+const REWARD={
+  NEED:2,          // cần bao nhiêu lần xuất sắc
+  THRESHOLD:95,    // ngưỡng % để tính là "xuất sắc"
+
+  get(){return parseInt(localStorage.getItem('bon-stars')||'0')},
+  set(n){localStorage.setItem('bon-stars',String(n));this.render()},
+  add(){const n=this.get()+1;this.set(n);return n},
+  reset(){this.set(0)},
+
+  render(){
+    const el=document.getElementById('rewardChip');
+    if(!el)return;
+    const n=Math.min(this.get(),this.NEED);
+    const stars='🌟'.repeat(n)+'☆'.repeat(Math.max(0,this.NEED-n));
+    el.innerHTML='<span class="rw-icon">🎁</span><span class="rw-stars">'+stars+'</span>';
+    el.classList.toggle('ready',this.get()>=this.NEED);
+    el.title=this.get()>=this.NEED?'Bon được chơi Word Blast! Bấm vào đây!':'Gõ đúng '+this.THRESHOLD+'% để tích sao';
+  },
+
+  // Kiểm tra sau khi hoàn thành bài → trả về true nếu mở khóa thưởng
+  check(pct){
+    if(pct>=this.THRESHOLD){
+      const n=this.add();
+      return n>=this.NEED;
+    }
+    return false;
+  },
+
+  go(){
+    this.reset();
+    const back=encodeURIComponent(location.origin+location.pathname);
+    location.href='https://doquang-frvn.github.io/WordBlast/?from=owly&rounds=1&return='+back;
+  },
+
+  // Popup mời chơi
+  showUnlock(extraMsg){
+    const self=this;
+    showOverlay('🎁🎮','PHẦN THƯỞNG CHO BON! 🎉','🌟🌟',
+      (extraMsg||'')+'<br><span style="color:#a55eea;font-weight:700;font-size:16px">Bon đã gõ xuất sắc '+this.NEED+' lần!<br>Được chơi 1 ván Word Blast! 🎮</span>',
+      '🎮 Chơi Word Blast ngay!',()=>self.go());
+    setTimeout(()=>speech.say('Chúc mừng Bon! Bon được thưởng một ván chơi Word Blast!'),800);
+  }
+};
 
 // ===================== TELEX ENGINE =====================
 // Phân tách 1 ký tự tiếng Việt thành chuỗi phím Telex cần gõ
@@ -824,32 +887,21 @@ const poem={
     }
 
     const summary=praise+'<br>Chính xác: <strong>'+pct+'%</strong> · Tốc độ: <strong>'+wpm+'</strong> WPM';
-
-    // ===== PHẦN THƯỞNG: 2 lần hoàn hảo → mở khóa WordBlast =====
-    let perfects=parseInt(localStorage.getItem('bon-perfects')||'0');
-    if(pct===100){
-      perfects++;
-      localStorage.setItem('bon-perfects',String(perfects));
-    }
     const self=this;
 
-    if(pct===100&&perfects>=2){
-      // Mở khóa phần thưởng!
-      localStorage.setItem('bon-perfects','0'); // reset đếm
-      showOverlay('🎁🎮','PHẦN THƯỞNG CHO BON! 🎉','⭐⭐⭐',
-        praise+'<br><br><span style="color:#a55eea;font-weight:700">Bon đã hoàn hảo 2 lần liên tiếp!<br>Được chơi 1 ván Word Blast! 🎮</span>',
-        '🎮 Chơi Word Blast ngay!',()=>{
-          const back=encodeURIComponent(location.href.split('?')[0]);
-          location.href='https://doquang-frvn.github.io/WordBlast/?from=owly&rounds=1&return='+back;
-        });
-      setTimeout(()=>speech.say('Chúc mừng Bon! Bon đã gõ hoàn hảo hai lần! Bon được thưởng một ván chơi Word Blast!'),800);
+    // ===== PHẦN THƯỞNG =====
+    if(REWARD.check(pct)){
+      REWARD.showUnlock(praise);
       return;
     }
 
-    const remain=2-perfects;
-    const bonus=(pct===100&&remain>0)
-      ?'<br><br><span style="color:#a55eea;font-weight:700">🎁 Hoàn hảo thêm '+remain+' lần nữa để được chơi Word Blast!</span>'
-      :'';
+    const have=REWARD.get(),need=REWARD.NEED-have;
+    let bonus='';
+    if(pct>=REWARD.THRESHOLD){
+      bonus='<br><br><span style="color:#a55eea;font-weight:700">🌟 Xuất sắc! Được +1 sao thưởng!<br>Còn '+need+' lần nữa là được chơi Word Blast! 🎮</span>';
+    }else{
+      bonus='<br><br><span style="color:var(--ink-soft);font-size:13px">🎁 Gõ đúng ≥'+REWARD.THRESHOLD+'% để được sao thưởng (đang có '+have+'/'+REWARD.NEED+')</span>';
+    }
 
     showOverlay(emoji,title,stars,summary+bonus,'Gõ lại bài này 🔄',()=>self.startTyping(self.current.id));
 
@@ -922,11 +974,13 @@ document.querySelectorAll('.tab').forEach(tab=>{
 (function(){
   const q=new URLSearchParams(location.search);
   if(q.get('from')==='wordblast'){
-    // Dọn URL cho sạch
+    const rounds=parseInt(q.get('rounds')||'1');
     history.replaceState({},'',location.pathname);
     setTimeout(()=>{
-      showOverlay('🦉🎮','Chào mừng Bon quay lại! 👋','⭐⭐⭐',
-        'Bon đã chơi xong Word Blast rồi!<br>Giờ mình cùng học tiếp nhé! 📚',
+      showOverlay('🦉🎮','Chào mừng Bon quay lại! 👋','🌟🌟',
+        'Bon đã chơi xong <strong>'+rounds+' ván</strong> Word Blast! 🎉<br>'
+        +'Giờ mình cùng học tiếp nhé! 📚<br><br>'
+        +'<span style="color:#a55eea;font-weight:700">🎁 Gõ xuất sắc '+REWARD.NEED+' lần nữa để lại được chơi!</span>',
         'Học tiếp nào! 🚀',()=>{});
       speech.say('Chào mừng Bon quay lại! Mình cùng học tiếp nhé!');
     },600);
@@ -936,6 +990,12 @@ document.querySelectorAll('.tab').forEach(tab=>{
 // ===================== INIT =====================
 renderKB();renderText();highlight();updateProgress();updateBadge();
 sound.load();speech.load();poem.load();poem.renderList();
+REWARD.render();
+
+// Chip phần thưởng: bấm được khi đã đủ sao
+document.getElementById('rewardChip').addEventListener('click',()=>{
+  if(REWARD.get()>=REWARD.NEED){sound.init();REWARD.showUnlock('')}
+});
 
 if(('ontouchstart' in window||navigator.maxTouchPoints>0)&&localStorage.getItem('bon-tip-x')!=='1')
   document.getElementById('tabletTip').style.display='flex';
