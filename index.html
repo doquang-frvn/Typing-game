@@ -60,6 +60,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .text-display{background:#fffaf2;border:2px dashed var(--line);border-radius:14px;padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:clamp(15px,1.7vw,22px);line-height:1.6;letter-spacing:.5px;margin:6px 0;user-select:none;word-wrap:break-word;cursor:text}
 .char{position:relative;padding:0 1px;border-radius:3px;transition:background .1s,color .1s}
 .char.done{color:var(--success)}.char.wrong{color:#fff;background:var(--danger)}
+.char.typing{color:var(--ink-soft);background:#f0e6d8;border-radius:3px}
 .char.current{background:var(--warn);color:var(--ink);animation:blink 1s ease-in-out infinite}
 .char.space{padding:0 4px;position:relative}
 .char.space::before{content:'';position:absolute;left:4px;right:4px;bottom:5px;height:2px;background:var(--line);border-radius:2px}
@@ -527,7 +528,7 @@ function findKeyEl(k){
 }
 
 // Highlight bàn phím cho tab Thơ — TUẦN TỰ từng phím theo bước
-function highlightPoem(ch,step){
+function highlightPoem(ch,step,allDone){
   document.querySelectorAll('.key.target').forEach(e=>e.classList.remove('target'));
   document.querySelectorAll('.key.step-done').forEach(e=>e.classList.remove('step-done'));
   document.querySelectorAll('g.finger-active').forEach(e=>{e.classList.remove('finger-active');e.style.removeProperty('--active-color');e.style.removeProperty('--active-stroke')});
@@ -537,27 +538,31 @@ function highlightPoem(ch,step){
   if(ch===undefined||ch===null){if(hintBox)hintBox.innerHTML='';return}
 
   const keys=telexKeys(ch);
-  step=Math.min(step||0,keys.length-1);
+  step=Math.max(0,Math.min(step||0,keys.length-1));
   const cur=keys[step];
 
-  // Chỉ sáng PHÍM HIỆN TẠI
-  const keyEl=findKeyEl(cur);
-  if(keyEl)keyEl.classList.add('target');
-
-  // Ngón tay của phím hiện tại
-  const info=FMAP[cur];
-  if(info){
-    const act=(id,color)=>{const g=document.getElementById(id);if(!g)return;g.classList.add('finger-active');g.style.setProperty('--active-color',color);g.style.setProperty('--active-stroke',color);const svg=g.closest('.hand-svg');if(svg)svg.classList.add('has-active')};
-    if(info.finger==='thumb'){act('finger-left-thumb',info.color);act('finger-right-thumb',info.color)}
-    else act('finger-'+info.finger,info.color);
+  if(!allDone){
+    // Sáng phím hiện tại + ngón tay tương ứng
+    const keyEl=findKeyEl(cur);
+    if(keyEl)keyEl.classList.add('target');
+    const info=FMAP[cur];
+    if(info){
+      const act=(id,color)=>{const g=document.getElementById(id);if(!g)return;g.classList.add('finger-active');g.style.setProperty('--active-color',color);g.style.setProperty('--active-stroke',color);const svg=g.closest('.hand-svg');if(svg)svg.classList.add('has-active')};
+      if(info.finger==='thumb'){act('finger-left-thumb',info.color);act('finger-right-thumb',info.color)}
+      else act('finger-'+info.finger,info.color);
+    }
   }
 
-  // Chuỗi chip hiển thị: phím đã gõ (xanh) → phím hiện tại (vàng nhấp nháy) → phím sắp gõ (mờ)
+  // Chip chuỗi Telex
   if(hintBox){
     const label=k=>k==='\n'?'⏎':(k===' '?'␣':k.toUpperCase());
     const disp=ch==='\n'?'xuống dòng':(ch===' '?'dấu cách':'"'+ch+'"');
     const chips=keys.map((k,i)=>{
-      const st=i<step?'tk-done':(i===step?'tk-now':'tk-next');
+      let st;
+      if(allDone)st='tk-done';
+      else if(i<step)st='tk-done';
+      else if(i===step)st='tk-now';
+      else st='tk-next';
       return '<span class="tk '+st+'">'+label(k)+'</span>';
     }).join('<span class="tk-arrow">→</span>');
     hintBox.innerHTML='<span class="tk-label">Gõ '+disp+':</span>'+chips;
@@ -660,7 +665,12 @@ const poem={
         const sp=document.createElement('span');sp.className='char';
         if(t[i]===' '){sp.classList.add('space');sp.innerHTML='&nbsp;'}
         else sp.textContent=t[i];
-        if(i<this.pos)sp.classList.add(this._charResults[i]?'done':'wrong');
+        if(i<this.pos){
+          const r=this._charResults[i];
+          if(r===true)sp.classList.add('done');
+          else if(r===false)sp.classList.add('wrong');
+          else sp.classList.add('typing'); // đang gõ dở (ghép dấu)
+        }
         if(i===this.pos)sp.classList.add('current');
         row.appendChild(sp);
       }
@@ -683,16 +693,18 @@ const poem={
   // Bước hiện tại trong chuỗi Telex của ký tự đang gõ
   step:0,
 
-  // Bé nhấn 1 phím → kiểm tra có khớp bước hiện tại không
+  // Bé nhấn 1 phím → tiến bước nếu khớp
   onKeyStep(k){
     if(this.done)return;
     const ch=this.normalizedText[this.pos];
     if(ch===undefined)return;
     const keys=telexKeys(ch);
+    // Chỉ tiến bước khi phím khớp đúng bước hiện tại
     if(this.step<keys.length&&k===keys[this.step]){
       this.step++;
-      if(this.step>=keys.length)this.step=keys.length-1; // giữ ở phím cuối tới khi ký tự hoàn thành
-      highlightPoem(ch,this.step);
+      // Nếu đã gõ hết chuỗi thì giữ nguyên (chờ input event chuyển ký tự)
+      const showStep=Math.min(this.step,keys.length-1);
+      highlightPoem(ch,showStep,this.step>=keys.length);
     }
   },
 
@@ -704,51 +716,48 @@ const poem={
     const val=inp.value;
     const t=this.normalizedText;
 
-    // Start timer on first input
     if(this.start===null&&val.length>0){this.start=Date.now();this.timer=setInterval(()=>this.updatePoemStats(),200)}
 
-    // Handle: compare current input length with position
-    // If input grew → new char typed
-    // If input shrunk → backspace (allow corrections!)
-    const newLen=val.length;
+    // Giới hạn không cho gõ quá độ dài bài
+    if(val.length>t.length){inp.value=val.slice(0,t.length)}
+    const v=inp.value;
+    const finished=(v.length>=t.length);
 
-    if(newLen>this.pos){
-      // New characters typed
-      for(let i=this.pos;i<newLen&&i<t.length;i++){
-        const expected=t[i];
-        const typed=val[i];
-        // For newline: user presses Enter → textarea gets \n
-        const isCorrect=(typed===expected);
-        this._charResults[i]=isCorrect;
-        if(isCorrect){this.correct++;sound.correct();setMood('mascotPoemPlay','happy')}
-        else{setMood('mascotPoemPlay','sad')}// No error sound for poems - gentle!
-        this.total++;
+    // Tính lại TOÀN BỘ từ đầu (chịu được backspace mà Unikey sinh ra khi ghép dấu)
+    // Ký tự CUỐI CÙNG có thể đang gõ dở (vd 'a' trên đường thành 'â') → chưa chấm
+    const stable=finished?v.length:Math.max(0,v.length-1);
+    this._charResults=[];
+    let correct=0;
+    for(let i=0;i<v.length;i++){
+      if(i<stable){
+        const ok=(v[i]===t[i]);
+        this._charResults[i]=ok;
+        if(ok)correct++;
+      }else{
+        this._charResults[i]=null; // đang gõ dở → hiển thị trung tính
       }
-      this.pos=Math.min(newLen,t.length);
-    }else if(newLen<this.pos){
-      // Backspace - allow corrections
-      // Undo results for deleted chars
-      for(let i=newLen;i<this.pos;i++){
-        if(this._charResults[i]===true)this.correct--;
-        if(this._charResults[i]!==undefined)this.total--;
-        delete this._charResults[i];
-      }
-      this.pos=newLen;
+    }
+    const prevPos=this.pos;
+    this.pos=v.length;
+    this.correct=correct;
+    this.total=stable;
+
+    // Âm thanh + mascot khi có ký tự vừa được chốt đúng/sai
+    if(this.pos>prevPos&&stable>0){
+      const lastStable=stable-1;
+      if(this._charResults[lastStable]===true){sound.correct();setMood('mascotPoemPlay','happy')}
+      else if(this._charResults[lastStable]===false){setMood('mascotPoemPlay','sad')}
     }
 
-    // Con trỏ chuyển sang ký tự mới → reset bước Telex
-    this.step=0;
+    // Con trỏ sang ký tự mới → reset bước Telex
+    if(this.pos!==prevPos)this.step=0;
 
-    // Update display
     this.renderPoemText();
     this.updatePoemProgress();
     this.updatePoemStats();
-
-    // Update bubble with encouragement
     this.updateBubble();
 
-    // Check completion
-    if(this.pos>=t.length){this.finishPoem()}
+    if(finished)this.finishPoem();
   },
 
   updateBubble(){
@@ -767,10 +776,13 @@ const poem={
     const min=ms/60000;
     const wpm=min>0?Math.round((this.correct/5)/min):0;
     document.getElementById('wpm').textContent=wpm;
-    // Gentle display: show correct count instead of accuracy %
+    // Hiện % chính xác rõ ràng (dựa trên số ký tự đã chốt)
+    const pct=this.total>0?Math.round((this.correct/this.total)*100):100;
     const a=document.getElementById('acc');
-    a.textContent=this.correct+'/'+this.pos;
-    a.classList.add('ok');a.classList.remove('bad');
+    a.textContent=pct+'%';
+    a.classList.toggle('ok',pct>=90);
+    a.classList.toggle('bad',pct<70);
+    document.getElementById('accLabel').textContent='Chính xác';
     document.getElementById('time').textContent=sec+'s';
   },
 
@@ -781,32 +793,73 @@ const poem={
   },
 
   finishPoem(){
+    if(this.done)return;
     this.done=true;clearInterval(this.timer);
     this.updatePoemStats();this.updatePoemProgress();sound.win();
+    highlightPoem(null,0);
 
     const total=this.normalizedText.length;
     const correct=this.correct;
     const pct=Math.round((correct/total)*100);
     const wpm=parseInt(document.getElementById('wpm').textContent)||0;
+    const wrong=total-correct;
 
-    // Gentle scoring: always at least 1 star, focus on positivity
-    let stars='⭐',title='Bon đã hoàn thành! 🎉',emoji='🦉🎉';
-    if(pct>=80){stars='⭐⭐';title='Bon giỏi quá! 🎉';emoji='🦉🌟'}
-    if(pct>=95){stars='⭐⭐⭐';title='Bon siêu cấp! 🎉';emoji='🦉👑'}
+    // Thang điểm PHÂN BIỆT RÕ - vẫn nhẹ nhàng nhưng phản ánh đúng
+    let stars,title,emoji,praise;
+    if(pct===100){
+      stars='⭐⭐⭐';title='HOÀN HẢO! Bon tuyệt vời! 👑';emoji='🦉👑';
+      praise='Bon gõ đúng <strong>toàn bộ '+total+' chữ</strong>! Không sai chữ nào!';
+    }else if(pct>=95){
+      stars='⭐⭐⭐';title='Bon siêu cấp! 🌟';emoji='🦉🌟';
+      praise='Bon gõ đúng <strong>'+correct+'/'+total+'</strong> chữ, chỉ sai '+wrong+' chữ thôi!';
+    }else if(pct>=85){
+      stars='⭐⭐';title='Bon giỏi lắm! 🎉';emoji='🦉🎉';
+      praise='Bon gõ đúng <strong>'+correct+'/'+total+'</strong> chữ! Sắp hoàn hảo rồi!';
+    }else if(pct>=70){
+      stars='⭐⭐';title='Bon làm tốt! 👍';emoji='🦉😊';
+      praise='Bon gõ đúng <strong>'+correct+'/'+total+'</strong> chữ! Cố thêm chút nữa nhé!';
+    }else{
+      stars='⭐';title='Bon đã hoàn thành! 💪';emoji='🦉💪';
+      praise='Bon gõ đúng <strong>'+correct+'/'+total+'</strong> chữ! Luyện thêm sẽ giỏi hơn!';
+    }
 
-    // Gentle summary: emphasize correct, not errors
-    const summary='Bon đã gõ đúng <strong>'+correct+'/'+total+'</strong> chữ!<br>Tốc độ: <strong>'+wpm+'</strong> WPM';
+    const summary=praise+'<br>Chính xác: <strong>'+pct+'%</strong> · Tốc độ: <strong>'+wpm+'</strong> WPM';
 
+    // ===== PHẦN THƯỞNG: 2 lần hoàn hảo → mở khóa WordBlast =====
+    let perfects=parseInt(localStorage.getItem('bon-perfects')||'0');
+    if(pct===100){
+      perfects++;
+      localStorage.setItem('bon-perfects',String(perfects));
+    }
     const self=this;
-    showOverlay(emoji,title,stars,summary,'Gõ lại bài này 🔄',()=>self.startTyping(self.current.id));
 
-    // Voice congratulation - always positive!
+    if(pct===100&&perfects>=2){
+      // Mở khóa phần thưởng!
+      localStorage.setItem('bon-perfects','0'); // reset đếm
+      showOverlay('🎁🎮','PHẦN THƯỞNG CHO BON! 🎉','⭐⭐⭐',
+        praise+'<br><br><span style="color:#a55eea;font-weight:700">Bon đã hoàn hảo 2 lần liên tiếp!<br>Được chơi 1 ván Word Blast! 🎮</span>',
+        '🎮 Chơi Word Blast ngay!',()=>{
+          const back=encodeURIComponent(location.href.split('?')[0]);
+          location.href='https://doquang-frvn.github.io/WordBlast/?from=owly&rounds=1&return='+back;
+        });
+      setTimeout(()=>speech.say('Chúc mừng Bon! Bon đã gõ hoàn hảo hai lần! Bon được thưởng một ván chơi Word Blast!'),800);
+      return;
+    }
+
+    const remain=2-perfects;
+    const bonus=(pct===100&&remain>0)
+      ?'<br><br><span style="color:#a55eea;font-weight:700">🎁 Hoàn hảo thêm '+remain+' lần nữa để được chơi Word Blast!</span>'
+      :'';
+
+    showOverlay(emoji,title,stars,summary+bonus,'Gõ lại bài này 🔄',()=>self.startTyping(self.current.id));
+
     setTimeout(()=>{
-      const msgs=pct>=95
-        ?['Chúc mừng Bon! Bon gõ đúng hầu hết chữ! Giỏi quá!','Bon siêu cấp! Gõ đúng gần hết luôn!']
-        :pct>=80
-        ?['Bon giỏi lắm! Gõ đúng nhiều chữ rồi! Cố thêm nhé!','Bon làm tốt lắm! Mỗi lần sẽ giỏi hơn!']
-        :['Bon đã hoàn thành bài thơ rồi! Tuyệt lắm! Lần sau sẽ giỏi hơn nữa!','Cố lên Bon ơi! Bon đã rất cố gắng!'];
+      const msgs=pct===100
+        ?['Tuyệt vời! Bon gõ đúng hết tất cả! Bon giỏi quá!','Hoàn hảo! Bon không sai chữ nào!']
+        :pct>=95?['Bon siêu cấp! Chỉ sai vài chữ thôi!','Bon giỏi lắm! Gần hoàn hảo rồi!']
+        :pct>=85?['Bon giỏi lắm! Sắp hoàn hảo rồi!','Bon làm tốt lắm! Cố thêm nhé!']
+        :pct>=70?['Bon làm tốt! Cố gắng thêm chút nữa nhé!','Bon đang tiến bộ đấy! Cố lên!']
+        :['Bon đã hoàn thành bài rồi! Luyện thêm sẽ giỏi hơn!','Cố lên Bon ơi! Bon đã rất cố gắng!'];
       speech.say(msgs[Math.floor(Math.random()*msgs.length)]);
     },800);
   },
@@ -864,6 +917,21 @@ document.querySelectorAll('.tab').forEach(tab=>{
     }
   });
 });
+
+// ===================== QUAY VỀ TỪ WORD BLAST =====================
+(function(){
+  const q=new URLSearchParams(location.search);
+  if(q.get('from')==='wordblast'){
+    // Dọn URL cho sạch
+    history.replaceState({},'',location.pathname);
+    setTimeout(()=>{
+      showOverlay('🦉🎮','Chào mừng Bon quay lại! 👋','⭐⭐⭐',
+        'Bon đã chơi xong Word Blast rồi!<br>Giờ mình cùng học tiếp nhé! 📚',
+        'Học tiếp nào! 🚀',()=>{});
+      speech.say('Chào mừng Bon quay lại! Mình cùng học tiếp nhé!');
+    },600);
+  }
+})();
 
 // ===================== INIT =====================
 renderKB();renderText();highlight();updateProgress();updateBadge();
